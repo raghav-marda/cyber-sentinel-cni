@@ -1,31 +1,226 @@
-# AI-Driven Cyber Resilience for Critical National Infrastructure
-### ET AI Hackathon 2026 — Problem Statement 7
+# 🛡️ Cyber Sentinel CNI
 
-## Overview
-A behavioural intelligence platform that detects network anomalies without relying on known malware signatures, and maps confirmed threats to MITRE ATT&CK techniques to generate actionable defensive recommendations — compressing detection time from weeks to minutes.
+**AI-Driven Cyber Resilience for Critical National Infrastructure**
 
-## What this prototype does
-1. **Anomaly Detection Engine** — flags deviations from normal network behaviour using unsupervised ML
-2. **APT Attribution Agent** — maps flagged anomalies to MITRE ATT&CK tactics/techniques using RAG, and suggests next-stage predictions + defensive actions
-3. **Unified Dashboard** — end-to-end demo: raw event → anomaly flag → MITRE attribution → recommended action
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Hackathon](https://img.shields.io/badge/ET%20AI%20Hackathon-2026-blue)
+![Problem Statement](https://img.shields.io/badge/PS-7-orange)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-Hackathon%20Prototype-lightgrey)
 
-See `docs/SCOPE.md` for exact build boundaries and what's intentionally out of scope for this prototype (roadmapped instead).
+> A behavioural intelligence platform that detects cyber threats to critical infrastructure **without relying on known malware signatures** — compressing detection-to-response time from weeks to minutes.
 
-## Repo structure
+Built solo for **ET AI Hackathon 2026 — Problem Statement 7**.
+
+---
+
+## 📋 Table of Contents
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Modules & Progress](#-modules--progress)
+- [Key Results](#-key-results)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Datasets](#-datasets)
+- [Roadmap](#-roadmap)
+
+---
+
+## 🎯 Overview
+
+Critical national infrastructure — power grids, government systems, financial networks — faces attackers who deliberately operate "low and slow" to evade signature-based detection. CERT-In reported handling over **1.59 million cybersecurity incidents in 2023** alone, with most breaches discovered only weeks or months after initial compromise.
+
+**Cyber Sentinel CNI** addresses this with a behavioural intelligence layer that:
+1. Learns what *normal* network behaviour looks like — no attack signatures needed
+2. Flags deviations in real time and explains *why* they're suspicious
+3. Maps flagged behaviour to the **MITRE ATT&CK** framework to identify attacker techniques, likely next moves, and known threat actor associations
+4. Recommends concrete, MITRE-sourced defensive mitigations
+5. *(In progress)* Orchestrates automated containment, prioritizes vulnerabilities, and simulates attack paths on a digital twin
+
+---
+
+## 🏗️ Architecture
+
 ```
-anomaly-detection/   # Module 1: ML model + preprocessing
-attribution-agent/   # Module 2: RAG + MITRE ATT&CK mapping
-frontend/            # Dashboard connecting both modules
-data/                # Datasets (NSL-KDD/CICIDS2017 + MITRE ATT&CK STIX)
-docs/                # Scope, architecture diagram, deliverables
+                    ┌─────────────────────────┐
+                    │   Raw Network Traffic    │
+                    │   (NSL-KDD / live feed)  │
+                    └────────────┬─────────────┘
+                                 │
+                    ┌────────────▼─────────────┐
+                    │   MODULE 1                │
+                    │   Behavioural Anomaly     │
+                    │   Detection Engine        │
+                    │   (Ensemble: Statistical  │
+                    │   Z-score + Isolation     │
+                    │   Forest)                 │
+                    └────────────┬─────────────┘
+                                 │ flagged anomaly + severity
+                    ┌────────────▼─────────────┐
+                    │   Pipeline Bridge          │
+                    │   (event → NL description) │
+                    └────────────┬─────────────┘
+                                 │ behaviour description
+                    ┌────────────▼─────────────┐
+                    │   MODULE 2                 │
+                    │   APT Attribution Agent     │
+                    │   (Hybrid RAG: TF-IDF +     │
+                    │   keyword rules over MITRE  │
+                    │   ATT&CK, 697 techniques)   │
+                    └────────────┬─────────────┘
+                                 │ technique + tactics + threat group
+                    ┌────────────▼─────────────┐
+                    │  MODULES 3-5 (in progress)  │
+                    │  Incident Response          │
+                    │  Orchestrator · Vuln         │
+                    │  Prioritization · Digital    │
+                    │  Twin                        │
+                    └────────────┬─────────────┘
+                                 │
+                    ┌────────────▼─────────────┐
+                    │   Unified Dashboard        │
+                    └───────────────────────────┘
 ```
 
-## Datasets (already downloaded, in `data/`)
-- `data/nsl-kdd/` — NSL-KDD network intrusion dataset (train + test, labelled normal/attack traffic) for Module 1
-- `data/mitre-cti/enterprise-attack/enterprise-attack.json` — Full MITRE ATT&CK Enterprise STIX bundle (tactics, techniques, relationships) for Module 2
+---
 
-## Status
-🚧 Day 1 — scope locked, structure initialized, datasets downloaded. Build in progress.
+## 📦 Modules & Progress
 
-## Team
-Raghav — Solo builder, Amity University Mumbai
+| # | Module | Status | Depth |
+|---|--------|--------|-------|
+| 1 | **Behavioural Anomaly Detection Engine** | ✅ Complete | Full ML build — ensemble model, rigorous evaluation |
+| 2 | **APT Campaign Attribution & Prediction Agent** | ✅ Complete | Full RAG build — hybrid retrieval, quantitatively evaluated |
+| 3 | **Autonomous Incident Response Orchestrator** | 🔜 In progress | — |
+| 4 | **Government Infrastructure Vulnerability Prioritisation** | ⏳ Planned | — |
+| 5 | **Cyber Resilience Digital Twin** | ⏳ Planned | — |
+
+See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
+
+---
+
+## 📊 Key Results
+
+### Module 1 — Anomaly Detection (trained on normal-traffic-only baseline)
+
+| Method | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|
+| Statistical Z-score baseline | 0.851 | 0.858 | 0.854 | 0.894 |
+| Isolation Forest | 0.974 | 0.648 | 0.778 | 0.939 |
+| **Ensemble (final model)** | **0.871** | **0.878** | **0.874** | 0.935 |
+
+**Detection rate by attack category:**
+| DoS | Probe | R2L | U2R |
+|---|---|---|---|
+| 79.3% | 88.3% | 8.6%¹ | 28.4%¹ |
+
+¹ *R2L/U2R attacks are low-volume and behaviourally subtle — a known, documented challenge in NSL-KDD research. Flagged here transparently as a limitation and future improvement area (see [Roadmap](#-roadmap)), not hidden.*
+
+**Top features driving detection:** `dst_host_rerror_rate`, `dst_host_srv_rerror_rate`, `count`, `srv_rerror_rate` — all connection-error and traffic-pattern indicators, consistent with expected attack behaviour.
+
+### Module 2 — APT Attribution Agent (RAG over MITRE ATT&CK, 697 techniques)
+
+| Metric | Score |
+|---|---|
+| Top-1 retrieval accuracy | 62.7% |
+| Top-3 retrieval accuracy | **96.0%** |
+| Techniques indexed | 697 |
+| Threat groups mapped | 189 |
+| Mitigations linked | 268 |
+
+*(Evaluated on 150 held-out technique descriptions — random-chance top-3 accuracy would be ~0.4%.)*
+
+**Example — multi-stage campaign reconstruction:** given a sequence of 5 flagged anomalies, the agent correctly reconstructed the kill-chain (**Discovery → Credential Access → Privilege Escalation → Stealth → Exfiltration**) and ranked the closest-matching known APT groups by technique overlap (Jaccard similarity).
+
+Full evaluation artifacts: [`anomaly-detection/rigorous_evaluation_summary.json`](anomaly-detection/rigorous_evaluation_summary.json), [`attribution-agent/attribution_evaluation_summary.json`](attribution-agent/attribution_evaluation_summary.json)
+
+---
+
+## 🛠️ Tech Stack
+
+- **ML/Data:** Python, pandas, scikit-learn (Isolation Forest, TF-IDF), NumPy
+- **Threat Intelligence:** MITRE ATT&CK STIX 2.1 Enterprise dataset
+- **Visualization:** matplotlib, seaborn
+- **Dashboard:** *(planned)* Streamlit / React
+- **Datasets:** NSL-KDD (network intrusion), MITRE ATT&CK Enterprise (threat framework)
+
+---
+
+## 📁 Project Structure
+
+```
+cyber-sentinel-cni/
+├── README.md
+├── docs/
+│   └── SCOPE.md                      # Full scope, success criteria, judging alignment
+├── data/
+│   ├── nsl-kdd/                      # NSL-KDD train/test datasets
+│   └── mitre-cti/                    # MITRE ATT&CK Enterprise STIX bundle
+├── anomaly-detection/                # Module 1
+│   ├── preprocess.py                 # Data loading + feature encoding
+│   ├── anomaly_model.py              # Isolation Forest + real-time scoring
+│   ├── advanced_evaluation.py        # IF vs LOF comparison, per-category breakdown
+│   ├── rigorous_evaluation.py        # Statistical baseline, ensemble, ROC-AUC, tuning
+│   └── *.png / *.json                # Visualizations + saved metrics
+├── attribution-agent/                # Module 2
+│   ├── mitre_parser.py               # STIX bundle parser
+│   ├── attribution_agent.py          # Hybrid RAG retrieval engine
+│   ├── pipeline_bridge.py            # Connects Module 1 → Module 2
+│   ├── rigorous_evaluation.py        # Retrieval accuracy + campaign narrative builder
+│   └── *.json                        # Evaluation results
+├── incident-response-orchestrator/   # Module 3 (in progress)
+├── vulnerability-prioritization/     # Module 4 (planned)
+├── digital-twin/                     # Module 5 (planned)
+└── frontend/                         # Unified dashboard (planned)
+```
+
+---
+
+## 🚀 Getting Started
+
+```bash
+git clone https://github.com/raghav-marda/cyber-sentinel-cni.git
+cd cyber-sentinel-cni
+
+# Module 1 — Anomaly Detection
+cd anomaly-detection
+pip install pandas scikit-learn numpy matplotlib seaborn joblib
+python3 preprocess.py           # verify data loads correctly
+python3 anomaly_model.py        # train + evaluate model
+python3 rigorous_evaluation.py  # full rigorous evaluation with ensemble
+
+# Module 2 — APT Attribution
+cd ../attribution-agent
+python3 mitre_parser.py         # verify MITRE data parses correctly
+python3 attribution_agent.py    # run example attributions
+python3 pipeline_bridge.py      # test full Module1 -> Module2 pipeline
+python3 rigorous_evaluation.py  # retrieval accuracy + campaign narrative demo
+```
+
+---
+
+## 💾 Datasets
+
+- **[NSL-KDD](https://www.unb.ca/cic/datasets/nsl.html)** — Labelled network intrusion dataset (125,973 train / 22,544 test records), an improved version of the classic KDD Cup 99 dataset
+- **[MITRE ATT&CK](https://attack.mitre.org/)** — Enterprise Matrix, STIX 2.1 format: 697 active techniques, 189 threat groups, 268 mitigations, 21,000+ relationships
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Module 1: Behavioural Anomaly Detection (ensemble model, rigorously evaluated)
+- [x] Module 2: APT Attribution Agent (hybrid RAG, quantitatively evaluated)
+- [ ] Module 3: Autonomous Incident Response Orchestrator (rule-based playbook automation)
+- [ ] Module 4: Vulnerability Prioritisation (CVE-based risk ranking)
+- [ ] Module 5: Cyber Resilience Digital Twin (attack-path simulation panel)
+- [ ] Unified dashboard integrating all 5 modules
+- [ ] Improve R2L/U2R detection via supervised fine-tuning on labelled subsets
+- [ ] Upgrade retrieval from TF-IDF to semantic embeddings (production enhancement)
+
+---
+
+## 👤 Author
+
+**Raghav Marda** — Solo builder, Amity University Mumbai, Google Student Ambassador 2026
+
+*Last updated: Day 5 of build (see commit history for detailed timeline)*
