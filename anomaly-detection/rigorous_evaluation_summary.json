@@ -1,0 +1,46 @@
+{
+  "statistical_baseline": {
+    "precision": 0.8514,
+    "recall": 0.8575,
+    "f1": 0.8544,
+    "roc_auc": 0.8937
+  },
+  "isolation_forest": {
+    "precision": 0.9737,
+    "recall": 0.6482,
+    "f1": 0.7783,
+    "roc_auc": 0.9388
+  },
+  "ensemble": {
+    "precision": 0.871,
+    "recall": 0.8776,
+    "f1": 0.8743,
+    "roc_auc": 0.9354,
+    "threshold": 0.1
+  },
+  "best_single_method_vs_ensemble_f1_improvement_pct_points": 1.99,
+  "best_hyperparameters": {
+    "n_estimators": 300.0,
+    "contamination": 0.08,
+    "precision": 0.9629,
+    "recall": 0.7006,
+    "f1": 0.8111
+  },
+  "protocol_baseline_profile": {
+    "total_events": {
+      "icmp": 1043,
+      "tcp": 18880,
+      "udp": 2621
+    },
+    "flagged_anomalies": {
+      "icmp": 85,
+      "tcp": 8049,
+      "udp": 409
+    },
+    "anomaly_rate_pct": {
+      "icmp": 8.15,
+      "tcp": 42.63,
+      "udp": 15.6
+    }
+  }
+}

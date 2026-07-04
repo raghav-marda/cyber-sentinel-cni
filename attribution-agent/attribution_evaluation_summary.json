@@ -1,0 +1,86 @@
+{
+  "retrieval_accuracy": {
+    "n_evaluated": 150,
+    "top1_accuracy": 0.6267,
+    "top3_accuracy": 0.96
+  },
+  "example_campaign_narrative": {
+    "narrative": [
+      {
+        "step": 1,
+        "observed_behaviour": "attacker scanning multiple ports and services across the internal network",
+        "attributed_technique": "T1046 - Network Service Discovery",
+        "tactics": [
+          "discovery"
+        ]
+      },
+      {
+        "step": 2,
+        "observed_behaviour": "repeated failed login attempts followed by a successful login using valid credentials",
+        "attributed_technique": "T1110 - Brute Force",
+        "tactics": [
+          "credential-access"
+        ]
+      },
+      {
+        "step": 3,
+        "observed_behaviour": "privilege escalation observed, root shell access obtained on the host",
+        "attributed_technique": "T1055 - Process Injection",
+        "tactics": [
+          "stealth",
+          "privilege-escalation"
+        ]
+      },
+      {
+        "step": 4,
+        "observed_behaviour": "a process was observed injecting code into another running process to evade detection",
+        "attributed_technique": "T1055 - Process Injection",
+        "tactics": [
+          "stealth",
+          "privilege-escalation"
+        ]
+      },
+      {
+        "step": 5,
+        "observed_behaviour": "unusual outbound data transfer of significant volume to an external destination late at night",
+        "attributed_technique": "T1030 - Data Transfer Size Limits",
+        "tactics": [
+          "exfiltration"
+        ]
+      }
+    ],
+    "observed_technique_set": [
+      "T1110",
+      "T1030",
+      "T1046",
+      "T1055"
+    ],
+    "most_likely_campaign_match": [
+      {
+        "group": "DarkVishnya",
+        "jaccard_similarity": 0.1667,
+        "overlapping_techniques": 2
+      },
+      {
+        "group": "Suckfly",
+        "jaccard_similarity": 0.125,
+        "overlapping_techniques": 1
+      },
+      {
+        "group": "Agrius",
+        "jaccard_similarity": 0.0833,
+        "overlapping_techniques": 2
+      },
+      {
+        "group": "PLATINUM",
+        "jaccard_similarity": 0.0714,
+        "overlapping_techniques": 1
+      },
+      {
+        "group": "FIN5",
+        "jaccard_similarity": 0.0714,
+        "overlapping_techniques": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+protocol_type,total_events,flagged_anomalies,anomaly_rate_pct
+icmp,1043,85,8.15
+tcp,18880,8049,42.63
+udp,2621,409,15.6
