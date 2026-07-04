@@ -1,0 +1,37 @@
+{
+  "best_model": "Isolation Forest",
+  "test_precision": 0.9737,
+  "test_recall": 0.6482,
+  "test_f1": 0.7783,
+  "pr_auc": 0.9532,
+  "detection_by_category": {
+    "DoS": {
+      "count": 7460,
+      "detection_rate": 0.7929
+    },
+    "Probe": {
+      "count": 2421,
+      "detection_rate": 0.8827
+    },
+    "R2L": {
+      "count": 2885,
+      "detection_rate": 0.0856
+    },
+    "U2R": {
+      "count": 67,
+      "detection_rate": 0.2836
+    }
+  },
+  "top_features": {
+    "dst_host_rerror_rate": 0.017368709001119597,
+    "dst_host_srv_rerror_rate": 0.014272089605773877,
+    "count": 0.014257569951738843,
+    "srv_rerror_rate": 0.012726061292298882,
+    "same_srv_rate": 0.011282808374073763,
+    "dst_host_srv_serror_rate": 0.010833626600118294,
+    "rerror_rate": 0.009740122278403854,
+    "dst_host_serror_rate": 0.00962467231568024,
+    "flag": 0.009141542909663404,
+    "dst_host_same_srv_rate": 0.008710971196377253
+  }
+}
