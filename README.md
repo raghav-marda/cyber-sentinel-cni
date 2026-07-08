@@ -91,8 +91,8 @@ Critical national infrastructure — power grids, government systems, financial 
 |---|--------|--------|-------|
 | 1 | **Behavioural Anomaly Detection Engine** | ✅ Complete | Full ML build — ensemble model, rigorous evaluation |
 | 2 | **APT Campaign Attribution & Prediction Agent** | ✅ Complete | Full RAG build — hybrid retrieval, quantitatively evaluated |
-| 3 | **Autonomous Incident Response Orchestrator** | 🔜 In progress | — |
-| 4 | **Government Infrastructure Vulnerability Prioritisation** | ⏳ Planned | — |
+| 3 | **Autonomous Incident Response Orchestrator** | ✅ Complete | Full SOAR build — MITRE-mapped playbooks, escalation gates, audited |
+| 4 | **Government Infrastructure Vulnerability Prioritisation** | 🔜 In progress | — |
 | 5 | **Cyber Resilience Digital Twin** | ⏳ Planned | — |
 
 See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
@@ -134,6 +134,21 @@ See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
 
 Full evaluation artifacts: [`anomaly-detection/rigorous_evaluation_summary.json`](anomaly-detection/rigorous_evaluation_summary.json), [`attribution-agent/attribution_evaluation_summary.json`](attribution-agent/attribution_evaluation_summary.json)
 
+### Module 3 — Incident Response Orchestrator (evaluated on 20 real attack events, full pipeline)
+
+| Metric | Result |
+|---|---|
+| Attacks detected & responded to (Module 1 → 2 → 3) | 16 / 20 |
+| Playbook actions auto-executed | 82.5% |
+| Actions correctly escalated to human approval | 17.5% |
+| Compliance audit | **✅ 0 violations** — no high-blast-radius action ever auto-executed without approval |
+| Manual response baseline (aggregate) | 495 minutes |
+| Automated response time (aggregate) | 1.58 minutes |
+
+MITRE-tactic-mapped playbooks cover **100% of the 15 ATT&CK tactics**, each action tagged with a blast-radius score; actions scoring ≥4 (e.g. isolating an endpoint, revoking credentials) are **never** auto-executed — they're queued for human sign-off, matching the problem statement's explicit requirement for escalation gates.
+
+Full evaluation: [`incident-response-orchestrator/full_pipeline_evaluation_summary.json`](incident-response-orchestrator/full_pipeline_evaluation_summary.json)
+
 ---
 
 ## 🛠️ Tech Stack
@@ -168,7 +183,11 @@ cyber-sentinel-cni/
 │   ├── pipeline_bridge.py            # Connects Module 1 → Module 2
 │   ├── rigorous_evaluation.py        # Retrieval accuracy + campaign narrative builder
 │   └── *.json                        # Evaluation results
-├── incident-response-orchestrator/   # Module 3 (in progress)
+├── incident-response-orchestrator/   # Module 3
+│   ├── playbooks.py                  # MITRE-tactic-mapped response actions + blast radius
+│   ├── orchestrator.py               # Core engine: auto-execute vs escalate, audit trail
+│   ├── full_pipeline_evaluation.py   # Full Module1->2->3 evaluation + compliance audit
+│   └── *.json                        # Audit trail + evaluation results
 ├── vulnerability-prioritization/     # Module 4 (planned)
 ├── digital-twin/                     # Module 5 (planned)
 └── frontend/                         # Unified dashboard (planned)
@@ -195,6 +214,12 @@ python3 mitre_parser.py         # verify MITRE data parses correctly
 python3 attribution_agent.py    # run example attributions
 python3 pipeline_bridge.py      # test full Module1 -> Module2 pipeline
 python3 rigorous_evaluation.py  # retrieval accuracy + campaign narrative demo
+
+# Module 3 — Incident Response Orchestrator
+cd ../incident-response-orchestrator
+python3 playbooks.py                  # verify playbook coverage (100% of MITRE tactics)
+python3 orchestrator.py               # simulate response to 3 sample incidents
+python3 full_pipeline_evaluation.py   # full Module1->2->3 evaluation + compliance audit
 ```
 
 ---
@@ -210,7 +235,7 @@ python3 rigorous_evaluation.py  # retrieval accuracy + campaign narrative demo
 
 - [x] Module 1: Behavioural Anomaly Detection (ensemble model, rigorously evaluated)
 - [x] Module 2: APT Attribution Agent (hybrid RAG, quantitatively evaluated)
-- [ ] Module 3: Autonomous Incident Response Orchestrator (rule-based playbook automation)
+- [x] Module 3: Autonomous Incident Response Orchestrator (MITRE-mapped playbooks, escalation gates, 100% compliance audit)
 - [ ] Module 4: Vulnerability Prioritisation (CVE-based risk ranking)
 - [ ] Module 5: Cyber Resilience Digital Twin (attack-path simulation panel)
 - [ ] Unified dashboard integrating all 5 modules
@@ -223,4 +248,4 @@ python3 rigorous_evaluation.py  # retrieval accuracy + campaign narrative demo
 
 **Raghav Marda** — Solo builder, Amity University Mumbai, Google Student Ambassador 2026
 
-*Last updated: Day 5 of build (see commit history for detailed timeline)*
+*Last updated: Day 6 of build (see commit history for detailed timeline)*
