@@ -1,0 +1,15 @@
+{
+  "n_incidents_tested": 20,
+  "detected_by_module1": 16,
+  "total_playbook_actions": 40,
+  "auto_executed_pct": 82.5,
+  "escalated_pct": 17.5,
+  "aggregate_manual_baseline_minutes": 495,
+  "aggregate_automated_seconds": 95,
+  "compliance_audit": {
+    "total_audit_entries": 40,
+    "compliance_violations_found": 0,
+    "compliant": true,
+    "violations": []
+  }
+}
