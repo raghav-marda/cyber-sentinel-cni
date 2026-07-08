@@ -92,8 +92,8 @@ Critical national infrastructure — power grids, government systems, financial 
 | 1 | **Behavioural Anomaly Detection Engine** | ✅ Complete | Full ML build — ensemble model, rigorous evaluation |
 | 2 | **APT Campaign Attribution & Prediction Agent** | ✅ Complete | Full RAG build — hybrid retrieval, quantitatively evaluated |
 | 3 | **Autonomous Incident Response Orchestrator** | ✅ Complete | Full SOAR build — MITRE-mapped playbooks, escalation gates, audited |
-| 4 | **Government Infrastructure Vulnerability Prioritisation** | 🔜 In progress | — |
-| 5 | **Cyber Resilience Digital Twin** | ⏳ Planned | — |
+| 4 | **Government Infrastructure Vulnerability Prioritisation** | ✅ Complete | Full build — real NVD/CVSS-BT data, contextualized risk scoring |
+| 5 | **Cyber Resilience Digital Twin** | 🔜 In progress | — |
 
 See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
 
@@ -149,6 +149,21 @@ MITRE-tactic-mapped playbooks cover **100% of the 15 ATT&CK tactics**, each acti
 
 Full evaluation: [`incident-response-orchestrator/full_pipeline_evaluation_summary.json`](incident-response-orchestrator/full_pipeline_evaluation_summary.json)
 
+### Module 4 — Vulnerability Prioritisation (real NVD data: 120,875 CVEs, 2015+)
+
+| Metric | Result |
+|---|---|
+| CVEs in working corpus (merged CVSS-BT + descriptions) | 120,875 |
+| CVEs with confirmed active exploitation (CISA KEV) | 840 |
+| CNI assets in simulated inventory | 12 (mixed IT/OT: PLCs, SCADA, VPN gateway, DB, etc.) |
+| Asset-vulnerability pairs identified via TF-IDF matching | 60 |
+| Top-10 overlap: contextualized vs naive CVSS-only ranking | 7/10 |
+| Actively-exploited CVEs naive ranking would miss from top-10 | 1 |
+
+**Why this matters:** the contextualized risk score combines CVSS-BT severity (40%), EPSS exploitation probability (25%), CISA KEV active-exploitation status (20%), and asset criticality/network zone (15%) — directly implementing the problem statement's ask to "contextualise exploitability given the specific network topology" rather than just sorting by a generic severity number. The comparison against naive CVSS-only ranking is shown explicitly, not just asserted.
+
+Full evaluation: [`vulnerability-prioritization/vulnerability_prioritization_summary.json`](vulnerability-prioritization/vulnerability_prioritization_summary.json), [`vulnerability-prioritization/remediation_queue.csv`](vulnerability-prioritization/remediation_queue.csv)
+
 ---
 
 ## 🛠️ Tech Stack
@@ -188,7 +203,11 @@ cyber-sentinel-cni/
 │   ├── orchestrator.py               # Core engine: auto-execute vs escalate, audit trail
 │   ├── full_pipeline_evaluation.py   # Full Module1->2->3 evaluation + compliance audit
 │   └── *.json                        # Audit trail + evaluation results
-├── vulnerability-prioritization/     # Module 4 (planned)
+├── vulnerability-prioritization/     # Module 4
+│   ├── cve_loader.py                 # Merges CVSS-BT + descriptions (120K+ real CVEs)
+│   ├── asset_matcher.py              # 12-asset CNI inventory + TF-IDF CVE matching
+│   ├── risk_ranking.py               # Contextualized scoring + naive-vs-context comparison
+│   └── remediation_queue.csv         # Full ranked output
 ├── digital-twin/                     # Module 5 (planned)
 └── frontend/                         # Unified dashboard (planned)
 ```
@@ -220,6 +239,13 @@ cd ../incident-response-orchestrator
 python3 playbooks.py                  # verify playbook coverage (100% of MITRE tactics)
 python3 orchestrator.py               # simulate response to 3 sample incidents
 python3 full_pipeline_evaluation.py   # full Module1->2->3 evaluation + compliance audit
+
+# Module 4 — Vulnerability Prioritisation
+cd ../vulnerability-prioritization
+pip install pyarrow
+python3 cve_loader.py       # merge CVSS-BT + CVE descriptions (~2 min, large files)
+python3 asset_matcher.py    # match CNI assets against CVE corpus
+python3 risk_ranking.py     # generate contextualized remediation queue
 ```
 
 ---
@@ -228,6 +254,7 @@ python3 full_pipeline_evaluation.py   # full Module1->2->3 evaluation + complian
 
 - **[NSL-KDD](https://www.unb.ca/cic/datasets/nsl.html)** — Labelled network intrusion dataset (125,973 train / 22,544 test records), an improved version of the classic KDD Cup 99 dataset
 - **[MITRE ATT&CK](https://attack.mitre.org/)** — Enterprise Matrix, STIX 2.1 format: 697 active techniques, 189 threat groups, 268 mitigations, 21,000+ relationships
+- **[CVSS-BT](https://github.com/t0sche/cvss-bt)** + **NVD CVE descriptions** — 120,875 real CVEs (2015+) enriched with EPSS exploitation probability and CISA KEV active-exploitation status
 
 ---
 
@@ -236,7 +263,7 @@ python3 full_pipeline_evaluation.py   # full Module1->2->3 evaluation + complian
 - [x] Module 1: Behavioural Anomaly Detection (ensemble model, rigorously evaluated)
 - [x] Module 2: APT Attribution Agent (hybrid RAG, quantitatively evaluated)
 - [x] Module 3: Autonomous Incident Response Orchestrator (MITRE-mapped playbooks, escalation gates, 100% compliance audit)
-- [ ] Module 4: Vulnerability Prioritisation (CVE-based risk ranking)
+- [x] Module 4: Vulnerability Prioritisation (real NVD data, contextualized risk scoring)
 - [ ] Module 5: Cyber Resilience Digital Twin (attack-path simulation panel)
 - [ ] Unified dashboard integrating all 5 modules
 - [ ] Improve R2L/U2R detection via supervised fine-tuning on labelled subsets
@@ -248,4 +275,4 @@ python3 full_pipeline_evaluation.py   # full Module1->2->3 evaluation + complian
 
 **Raghav Marda** — Solo builder, Amity University Mumbai, Google Student Ambassador 2026
 
-*Last updated: Day 6 of build (see commit history for detailed timeline)*
+*Last updated: Day 7 of build (see commit history for detailed timeline)*
