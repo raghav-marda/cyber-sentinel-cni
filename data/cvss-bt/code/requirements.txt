@@ -1,0 +1,4 @@
+cvss
+pandas
+requests
+ijson
