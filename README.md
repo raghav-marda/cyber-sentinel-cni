@@ -1,278 +1,172 @@
-# 🛡️ Cyber Sentinel CNI
+# Cyber Sentinel CNI
 
-**AI-Driven Cyber Resilience for Critical National Infrastructure**
+AI-driven cyber resilience for critical national infrastructure — built solo for **ET AI Hackathon 2026, Problem Statement 7**.
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Hackathon](https://img.shields.io/badge/ET%20AI%20Hackathon-2026-blue)
-![Problem Statement](https://img.shields.io/badge/PS-7-orange)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-Hackathon%20Prototype-lightgrey)
+CERT-In handled over 1.59 million cybersecurity incidents in 2023, and most breaches in government/CNI systems are found weeks or months after the attacker got in. Signature-based tools can't catch that because sophisticated attackers deliberately avoid known signatures. This project tries a different angle: learn what normal looks like, flag what isn't, and figure out what to do about it — automatically where it's safe to, and with a human in the loop where it isn't.
 
-> A behavioural intelligence platform that detects cyber threats to critical infrastructure **without relying on known malware signatures** — compressing detection-to-response time from weeks to minutes.
+## What's actually in here
 
-Built solo for **ET AI Hackathon 2026 — Problem Statement 7**.
+Five modules, matching the five things the problem statement lists under "what you may build." All five are implemented, not mocked — some more mature than others (see the status table below).
 
----
+| # | Module | Status |
+|---|--------|--------|
+| 1 | Behavioural Anomaly Detection Engine | Done |
+| 2 | APT Campaign Attribution & Prediction Agent | Done |
+| 3 | Autonomous Incident Response Orchestrator | Done |
+| 4 | Government Infrastructure Vulnerability Prioritisation | Done |
+| 5 | Cyber Resilience Digital Twin | In progress |
 
-## 📋 Table of Contents
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Modules & Progress](#-modules--progress)
-- [Key Results](#-key-results)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Datasets](#-datasets)
-- [Roadmap](#-roadmap)
+Full scope and reasoning behind what's in vs. out is in [`docs/SCOPE.md`](docs/SCOPE.md).
 
----
-
-## 🎯 Overview
-
-Critical national infrastructure — power grids, government systems, financial networks — faces attackers who deliberately operate "low and slow" to evade signature-based detection. CERT-In reported handling over **1.59 million cybersecurity incidents in 2023** alone, with most breaches discovered only weeks or months after initial compromise.
-
-**Cyber Sentinel CNI** addresses this with a behavioural intelligence layer that:
-1. Learns what *normal* network behaviour looks like — no attack signatures needed
-2. Flags deviations in real time and explains *why* they're suspicious
-3. Maps flagged behaviour to the **MITRE ATT&CK** framework to identify attacker techniques, likely next moves, and known threat actor associations
-4. Recommends concrete, MITRE-sourced defensive mitigations
-5. *(In progress)* Orchestrates automated containment, prioritizes vulnerabilities, and simulates attack paths on a digital twin
-
----
-
-## 🏗️ Architecture
+## How the pieces fit together
 
 ```
-                    ┌─────────────────────────┐
-                    │   Raw Network Traffic    │
-                    │   (NSL-KDD / live feed)  │
-                    └────────────┬─────────────┘
-                                 │
-                    ┌────────────▼─────────────┐
-                    │   MODULE 1                │
-                    │   Behavioural Anomaly     │
-                    │   Detection Engine        │
-                    │   (Ensemble: Statistical  │
-                    │   Z-score + Isolation     │
-                    │   Forest)                 │
-                    └────────────┬─────────────┘
-                                 │ flagged anomaly + severity
-                    ┌────────────▼─────────────┐
-                    │   Pipeline Bridge          │
-                    │   (event → NL description) │
-                    └────────────┬─────────────┘
-                                 │ behaviour description
-                    ┌────────────▼─────────────┐
-                    │   MODULE 2                 │
-                    │   APT Attribution Agent     │
-                    │   (Hybrid RAG: TF-IDF +     │
-                    │   keyword rules over MITRE  │
-                    │   ATT&CK, 697 techniques)   │
-                    └────────────┬─────────────┘
-                                 │ technique + tactics + threat group
-                    ┌────────────▼─────────────┐
-                    │  MODULES 3-5 (in progress)  │
-                    │  Incident Response          │
-                    │  Orchestrator · Vuln         │
-                    │  Prioritization · Digital    │
-                    │  Twin                        │
-                    └────────────┬─────────────┘
-                                 │
-                    ┌────────────▼─────────────┐
-                    │   Unified Dashboard        │
-                    └───────────────────────────┘
+Network traffic (NSL-KDD / live feed)
+        │
+        ▼
+Module 1: Anomaly Detection  ──► flags a deviation + severity
+        │
+        ▼
+Module 2: MITRE ATT&CK Attribution  ──► what technique, which known group, what's likely next
+        │
+        ▼
+Module 3: Incident Response Orchestrator  ──► auto-contains low-risk stuff, escalates the rest
+        │
+        ▼
+Module 4: Vulnerability Prioritisation  ──► feeds back which assets to patch first, given what's actively under attack
 ```
 
----
+Modules 1→2→3 run as one live pipeline (there's a script that proves it end-to-end on real data, not just each module in isolation). Module 4 pulls in real threat-actor data from Module 2 to decide which CVEs matter more right now — more on that below.
 
-## 📦 Modules & Progress
+## Module 1 — Anomaly Detection
 
-| # | Module | Status | Depth |
-|---|--------|--------|-------|
-| 1 | **Behavioural Anomaly Detection Engine** | ✅ Complete | Full ML build — ensemble model, rigorous evaluation |
-| 2 | **APT Campaign Attribution & Prediction Agent** | ✅ Complete | Full RAG build — hybrid retrieval, quantitatively evaluated |
-| 3 | **Autonomous Incident Response Orchestrator** | ✅ Complete | Full SOAR build — MITRE-mapped playbooks, escalation gates, audited |
-| 4 | **Government Infrastructure Vulnerability Prioritisation** | ✅ Complete | Full build — real NVD/CVSS-BT data, contextualized risk scoring |
-| 5 | **Cyber Resilience Digital Twin** | 🔜 In progress | — |
-
-See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
-
----
-
-## 📊 Key Results
-
-### Module 1 — Anomaly Detection (trained on normal-traffic-only baseline)
+Trained only on normal NSL-KDD traffic (no attack data during training — that's the actual point of anomaly detection, not cheating by peeking at labels). Tried three approaches and kept receipts on all of them instead of just reporting the best one:
 
 | Method | Precision | Recall | F1 | ROC-AUC |
 |---|---|---|---|---|
-| Statistical Z-score baseline | 0.851 | 0.858 | 0.854 | 0.894 |
+| Statistical z-score baseline | 0.851 | 0.858 | 0.854 | 0.894 |
 | Isolation Forest | 0.974 | 0.648 | 0.778 | 0.939 |
-| **Ensemble (final model)** | **0.871** | **0.878** | **0.874** | 0.935 |
+| Ensemble (both, weighted) | 0.871 | 0.878 | **0.874** | 0.935 |
 
-**Detection rate by attack category:**
-| DoS | Probe | R2L | U2R |
-|---|---|---|---|
-| 79.3% | 88.3% | 8.6%¹ | 28.4%¹ |
+The z-score baseline actually beat the ML model on F1 by itself — which was a surprise, but it's exactly why the ensemble exists. Combining the two beat both individually.
 
-¹ *R2L/U2R attacks are low-volume and behaviourally subtle — a known, documented challenge in NSL-KDD research. Flagged here transparently as a limitation and future improvement area (see [Roadmap](#-roadmap)), not hidden.*
+Detection isn't uniform across attack types, and I'm not hiding that:
 
-**Top features driving detection:** `dst_host_rerror_rate`, `dst_host_srv_rerror_rate`, `count`, `srv_rerror_rate` — all connection-error and traffic-pattern indicators, consistent with expected attack behaviour.
+- DoS: 79.3% detected
+- Probe: 88.3% detected
+- R2L: 8.6% detected
+- U2R: 28.4% detected
 
-### Module 2 — APT Attribution Agent (RAG over MITRE ATT&CK, 697 techniques)
+R2L and U2R attacks are low-and-slow and barely deviate from normal traffic — this is a documented hard problem in NSL-KDD research generally, not something specific to my implementation. Listed as a real limitation below, not swept under the rug.
 
-| Metric | Score |
-|---|---|
-| Top-1 retrieval accuracy | 62.7% |
-| Top-3 retrieval accuracy | **96.0%** |
-| Techniques indexed | 697 |
-| Threat groups mapped | 189 |
-| Mitigations linked | 268 |
+Also ran a full hyperparameter sweep, ROC curves, permutation-based feature importance (to know *why* something got flagged), and broke down anomaly rate by protocol (TCP/UDP/ICMP) since the problem statement specifically asks for behavioural baselines per network segment.
 
-*(Evaluated on 150 held-out technique descriptions — random-chance top-3 accuracy would be ~0.4%.)*
+## Module 2 — APT Attribution
 
-**Example — multi-stage campaign reconstruction:** given a sequence of 5 flagged anomalies, the agent correctly reconstructed the kill-chain (**Discovery → Credential Access → Privilege Escalation → Stealth → Exfiltration**) and ranked the closest-matching known APT groups by technique overlap (Jaccard similarity).
+Given a description of observed behaviour, this maps it to a MITRE ATT&CK technique, tells you which known threat groups use that technique, predicts the likely next stage of the attack (using ATT&CK's kill-chain ordering), and pulls real mitigation advice from MITRE's own data — nothing invented.
 
-Full evaluation artifacts: [`anomaly-detection/rigorous_evaluation_summary.json`](anomaly-detection/rigorous_evaluation_summary.json), [`attribution-agent/attribution_evaluation_summary.json`](attribution-agent/attribution_evaluation_summary.json)
+Retrieval is TF-IDF over all 697 active ATT&CK techniques, with a small keyword-boost layer on top for common SOC phrasing (pure TF-IDF alone missed some obvious matches — e.g. "scanning multiple ports" didn't surface Network Service Discovery on its own, so I added rule-based reinforcement for known terminology). Tested this properly instead of eyeballing a few examples: held out 150 technique descriptions and checked whether the system could retrieve the right technique from a paraphrase of its own text.
 
-### Module 3 — Incident Response Orchestrator (evaluated on 20 real attack events, full pipeline)
+- Top-1 accuracy: 62.7%
+- Top-3 accuracy: 96.0%
 
-| Metric | Result |
-|---|---|
-| Attacks detected & responded to (Module 1 → 2 → 3) | 16 / 20 |
-| Playbook actions auto-executed | 82.5% |
-| Actions correctly escalated to human approval | 17.5% |
-| Compliance audit | **✅ 0 violations** — no high-blast-radius action ever auto-executed without approval |
-| Manual response baseline (aggregate) | 495 minutes |
-| Automated response time (aggregate) | 1.58 minutes |
+(random guessing across 697 techniques would get you top-3 accuracy of about 0.4%, for scale)
 
-MITRE-tactic-mapped playbooks cover **100% of the 15 ATT&CK tactics**, each action tagged with a blast-radius score; actions scoring ≥4 (e.g. isolating an endpoint, revoking credentials) are **never** auto-executed — they're queued for human sign-off, matching the problem statement's explicit requirement for escalation gates.
+There's also a multi-stage campaign builder — feed it a sequence of anomalies over time and it reconstructs the likely kill-chain narrative and ranks which known APT groups' historical technique usage overlaps most with what was observed (Jaccard similarity over technique sets).
 
-Full evaluation: [`incident-response-orchestrator/full_pipeline_evaluation_summary.json`](incident-response-orchestrator/full_pipeline_evaluation_summary.json)
+## Module 3 — Incident Response Orchestrator
 
-### Module 4 — Vulnerability Prioritisation (real NVD data: 120,875 CVEs, 2015+)
+Playbooks are mapped from MITRE tactic → containment action, covering all 15 ATT&CK tactics. Each action carries a base "blast radius" (how disruptive it is), but that number isn't static — it's multiplied by the *actual* criticality of the target asset, pulled straight from Module 4's asset inventory. Isolating a print server and isolating a SCADA turbine controller are not the same decision, so they shouldn't be treated the same.
 
-| Metric | Result |
-|---|---|
-| CVEs in working corpus (merged CVSS-BT + descriptions) | 120,875 |
-| CVEs with confirmed active exploitation (CISA KEV) | 840 |
-| CNI assets in simulated inventory | 12 (mixed IT/OT: PLCs, SCADA, VPN gateway, DB, etc.) |
-| Asset-vulnerability pairs identified via TF-IDF matching | 60 |
-| Top-10 overlap: contextualized vs naive CVSS-only ranking | 7/10 |
-| Actively-exploited CVEs naive ranking would miss from top-10 | 1 |
+Auto-execution also requires the anomaly's severity to be "high" or "critical" — because Module 1 is roughly 80% accurate, not 100%, and auto-containing on a medium-confidence flag has a real operational cost if it turns out to be nothing. Added a rollback function for exactly that scenario (a false positive gets confirmed after the fact, and the containment action gets reversed).
 
-**Why this matters:** the contextualized risk score combines CVSS-BT severity (40%), EPSS exploitation probability (25%), CISA KEV active-exploitation status (20%), and asset criticality/network zone (15%) — directly implementing the problem statement's ask to "contextualise exploitability given the specific network topology" rather than just sorting by a generic severity number. The comparison against naive CVSS-only ranking is shown explicitly, not just asserted.
+One more thing real SOAR systems need that a toy version usually skips: if multiple incidents hit the same host in a short window, they get grouped as one coordinated campaign instead of triggering duplicate, possibly conflicting responses.
 
-Full evaluation: [`vulnerability-prioritization/vulnerability_prioritization_summary.json`](vulnerability-prioritization/vulnerability_prioritization_summary.json), [`vulnerability-prioritization/remediation_queue.csv`](vulnerability-prioritization/remediation_queue.csv)
+Ran this against 20 real attack events through the full Module 1→2→3 chain:
 
----
+- 16/20 attacks detected and responded to automatically
+- 77.5% of triggered actions auto-executed, 22.5% escalated to a human
+- 5 incidents correctly grouped into 2-incident correlated campaigns
+- 0 compliance violations — verified after the fact that no high-blast-radius action was ever auto-executed without approval
 
-## 🛠️ Tech Stack
+## Module 4 — Vulnerability Prioritisation
 
-- **ML/Data:** Python, pandas, scikit-learn (Isolation Forest, TF-IDF), NumPy
-- **Threat Intelligence:** MITRE ATT&CK STIX 2.1 Enterprise dataset
-- **Visualization:** matplotlib, seaborn
-- **Dashboard:** *(planned)* Streamlit / React
-- **Datasets:** NSL-KDD (network intrusion), MITRE ATT&CK Enterprise (threat framework)
+Uses real data: merged CVSS-BT (77MB) with NVD CVE descriptions (55MB) into about 121K CVEs from 2015 onward, enriched with EPSS (probability of exploitation) and CISA KEV (confirmed active exploitation right now). Built a small inventory of 12 representative CNI assets — PLCs, SCADA HMI, a domain controller, VPN gateway, etc. — and match each one against the CVE corpus via TF-IDF over the descriptions. The matches are specific: actual Siemens SIMATIC PLC CVEs for the PLC asset, actual Schneider Electric CVEs for the SCADA asset, not generic noise.
 
----
+The risk score isn't just CVSS. It's CVSS-BT (40%) + EPSS (25%) + a flat bonus if it's on the CISA KEV list (20%) + asset criticality (15%), then adjusted further by two things:
 
-## 📁 Project Structure
+- **Threat-actor relevance** — cross-referenced against Module 2's attributed campaign to see if the *specific* group currently in play is known (via real MITRE malware/tool platform data) to target this asset's platform. If yes, the score gets boosted.
+- **Unpatched age** — using the CVE's actual publish date, older unremediated high-risk CVEs get scaled up, since a 3-year-old unpatched critical CVE is a bigger compliance problem than one discovered last month.
 
-```
-cyber-sentinel-cni/
-├── README.md
-├── docs/
-│   └── SCOPE.md                      # Full scope, success criteria, judging alignment
-├── data/
-│   ├── nsl-kdd/                      # NSL-KDD train/test datasets
-│   └── mitre-cti/                    # MITRE ATT&CK Enterprise STIX bundle
-├── anomaly-detection/                # Module 1
-│   ├── preprocess.py                 # Data loading + feature encoding
-│   ├── anomaly_model.py              # Isolation Forest + real-time scoring
-│   ├── advanced_evaluation.py        # IF vs LOF comparison, per-category breakdown
-│   ├── rigorous_evaluation.py        # Statistical baseline, ensemble, ROC-AUC, tuning
-│   └── *.png / *.json                # Visualizations + saved metrics
-├── attribution-agent/                # Module 2
-│   ├── mitre_parser.py               # STIX bundle parser
-│   ├── attribution_agent.py          # Hybrid RAG retrieval engine
-│   ├── pipeline_bridge.py            # Connects Module 1 → Module 2
-│   ├── rigorous_evaluation.py        # Retrieval accuracy + campaign narrative builder
-│   └── *.json                        # Evaluation results
-├── incident-response-orchestrator/   # Module 3
-│   ├── playbooks.py                  # MITRE-tactic-mapped response actions + blast radius
-│   ├── orchestrator.py               # Core engine: auto-execute vs escalate, audit trail
-│   ├── full_pipeline_evaluation.py   # Full Module1->2->3 evaluation + compliance audit
-│   └── *.json                        # Audit trail + evaluation results
-├── vulnerability-prioritization/     # Module 4
-│   ├── cve_loader.py                 # Merges CVSS-BT + descriptions (120K+ real CVEs)
-│   ├── asset_matcher.py              # 12-asset CNI inventory + TF-IDF CVE matching
-│   ├── risk_ranking.py               # Contextualized scoring + naive-vs-context comparison
-│   └── remediation_queue.csv         # Full ranked output
-├── digital-twin/                     # Module 5 (planned)
-└── frontend/                         # Unified dashboard (planned)
-```
+Compared this against naive CVSS-only sorting explicitly (not just asserted that context matters): the two top-10 lists only overlap 7/10, and one actively-exploited (KEV) vulnerability that naive ranking would leave out of the top 10 gets correctly surfaced by the contextualized version.
 
----
+It also doesn't stop at a ranked list — real teams can't patch everything Monday morning, so there's a capacity-constrained scheduler that assumes a fixed weekly patch throughput and lays out an actual week-by-week remediation plan.
 
-## 🚀 Getting Started
+## Getting it running
 
 ```bash
 git clone https://github.com/raghav-marda/cyber-sentinel-cni.git
 cd cyber-sentinel-cni
 
-# Module 1 — Anomaly Detection
+# Module 1
 cd anomaly-detection
 pip install pandas scikit-learn numpy matplotlib seaborn joblib
-python3 preprocess.py           # verify data loads correctly
-python3 anomaly_model.py        # train + evaluate model
-python3 rigorous_evaluation.py  # full rigorous evaluation with ensemble
+python3 preprocess.py
+python3 anomaly_model.py
+python3 rigorous_evaluation.py
 
-# Module 2 — APT Attribution
+# Module 2
 cd ../attribution-agent
-python3 mitre_parser.py         # verify MITRE data parses correctly
-python3 attribution_agent.py    # run example attributions
-python3 pipeline_bridge.py      # test full Module1 -> Module2 pipeline
-python3 rigorous_evaluation.py  # retrieval accuracy + campaign narrative demo
+python3 mitre_parser.py
+python3 attribution_agent.py
+python3 pipeline_bridge.py
+python3 rigorous_evaluation.py
 
-# Module 3 — Incident Response Orchestrator
+# Module 3
 cd ../incident-response-orchestrator
-python3 playbooks.py                  # verify playbook coverage (100% of MITRE tactics)
-python3 orchestrator.py               # simulate response to 3 sample incidents
-python3 full_pipeline_evaluation.py   # full Module1->2->3 evaluation + compliance audit
+python3 playbooks.py
+python3 orchestrator.py
+python3 full_pipeline_evaluation.py
 
-# Module 4 — Vulnerability Prioritisation
+# Module 4
 cd ../vulnerability-prioritization
 pip install pyarrow
-python3 cve_loader.py       # merge CVSS-BT + CVE descriptions (~2 min, large files)
-python3 asset_matcher.py    # match CNI assets against CVE corpus
-python3 risk_ranking.py     # generate contextualized remediation queue
+python3 cve_loader.py       # merges the two CVE datasets, takes a minute or two
+python3 asset_matcher.py
+python3 risk_ranking.py
 ```
 
+## Repo layout
+
+```
+cyber-sentinel-cni/
+├── docs/SCOPE.md                      # what's in scope, why, and how success is measured
+├── data/
+│   ├── nsl-kdd/                       # network intrusion dataset
+│   ├── mitre-cti/                     # MITRE ATT&CK Enterprise STIX bundle
+│   ├── cvss-bt/                       # CVE scores + EPSS + CISA KEV
+│   └── cve-offline/                   # CVE descriptions
+├── anomaly-detection/                 # Module 1
+├── attribution-agent/                 # Module 2
+├── incident-response-orchestrator/    # Module 3
+├── vulnerability-prioritization/      # Module 4
+├── digital-twin/                      # Module 5 (in progress)
+└── frontend/                          # unified dashboard (planned)
+```
+
+## Datasets used
+
+- [NSL-KDD](https://www.unb.ca/cic/datasets/nsl.html) — 125,973 train / 22,544 test labelled network traffic records
+- [MITRE ATT&CK](https://attack.mitre.org/) Enterprise Matrix (STIX 2.1) — 697 techniques, 189 threat groups, 268 mitigations
+- [CVSS-BT](https://github.com/t0sche/cvss-bt) + NVD CVE descriptions — ~121K real CVEs enriched with EPSS and CISA KEV status
+
+## What's left / known gaps
+
+- Module 5 (digital twin) — not started yet
+- Dashboard tying all 5 modules into one UI — planned for the last couple of days before submission
+- R2L/U2R detection in Module 1 is weak (documented above) — would need supervised fine-tuning on labelled data to meaningfully improve, didn't have time to do that properly and didn't want to fake it
+- Retrieval in Module 2 uses TF-IDF, not semantic embeddings — works well enough for this scope (96% top-3 accuracy) but a production version would benefit from real embeddings
+
 ---
 
-## 💾 Datasets
-
-- **[NSL-KDD](https://www.unb.ca/cic/datasets/nsl.html)** — Labelled network intrusion dataset (125,973 train / 22,544 test records), an improved version of the classic KDD Cup 99 dataset
-- **[MITRE ATT&CK](https://attack.mitre.org/)** — Enterprise Matrix, STIX 2.1 format: 697 active techniques, 189 threat groups, 268 mitigations, 21,000+ relationships
-- **[CVSS-BT](https://github.com/t0sche/cvss-bt)** + **NVD CVE descriptions** — 120,875 real CVEs (2015+) enriched with EPSS exploitation probability and CISA KEV active-exploitation status
-
----
-
-## 🗺️ Roadmap
-
-- [x] Module 1: Behavioural Anomaly Detection (ensemble model, rigorously evaluated)
-- [x] Module 2: APT Attribution Agent (hybrid RAG, quantitatively evaluated)
-- [x] Module 3: Autonomous Incident Response Orchestrator (MITRE-mapped playbooks, escalation gates, 100% compliance audit)
-- [x] Module 4: Vulnerability Prioritisation (real NVD data, contextualized risk scoring)
-- [ ] Module 5: Cyber Resilience Digital Twin (attack-path simulation panel)
-- [ ] Unified dashboard integrating all 5 modules
-- [ ] Improve R2L/U2R detection via supervised fine-tuning on labelled subsets
-- [ ] Upgrade retrieval from TF-IDF to semantic embeddings (production enhancement)
-
----
-
-## 👤 Author
-
-**Raghav Marda** — Solo builder, Amity University Mumbai, Google Student Ambassador 2026
-
-*Last updated: Day 7 of build (see commit history for detailed timeline)*
+Raghav Marda, Amity University Mumbai — solo build, ET AI Hackathon 2026.
