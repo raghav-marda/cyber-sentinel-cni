@@ -3,130 +3,219 @@
     "incident_id": "INC-001",
     "action": "revoke_credentials",
     "target": "host-10.0.4.22",
-    "decision": "QUEUED_FOR_HUMAN_APPROVAL",
-    "reason": "blast_radius=4 >= threshold=4",
+    "decision": "AUTO_EXECUTED",
+    "reason": "dynamic_blast_radius=3.4 < threshold=4 AND severity='high' is auto-executable",
     "mitre_technique": "T1110 - Brute Force",
     "severity": "high",
-    "timestamp": "2026-07-08T06:07:45.362604+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107146+00:00"
   },
   {
     "incident_id": "INC-001",
     "action": "disable_account",
     "target": "host-10.0.4.22",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=3 < threshold=4",
+    "reason": "dynamic_blast_radius=2.55 < threshold=4 AND severity='high' is auto-executable",
     "mitre_technique": "T1110 - Brute Force",
     "severity": "high",
-    "timestamp": "2026-07-08T06:07:45.362894+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107303+00:00"
   },
   {
     "incident_id": "INC-001",
     "action": "alert_soc_team",
     "target": "host-10.0.4.22",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=1 < threshold=4",
+    "reason": "dynamic_blast_radius=0.85 < threshold=4 AND severity='high' is auto-executable",
     "mitre_technique": "T1110 - Brute Force",
     "severity": "high",
-    "timestamp": "2026-07-08T06:07:45.362920+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107311+00:00"
   },
   {
     "incident_id": "INC-001",
     "action": "preserve_evidence",
     "target": "host-10.0.4.22",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=1 < threshold=4",
+    "reason": "dynamic_blast_radius=0.85 < threshold=4 AND severity='high' is auto-executable",
     "mitre_technique": "T1110 - Brute Force",
     "severity": "high",
-    "timestamp": "2026-07-08T06:07:45.362927+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107316+00:00"
   },
   {
     "incident_id": "INC-002",
     "action": "snapshot_vm_state",
     "target": "host-10.0.7.15",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=2 < threshold=4",
+    "reason": "dynamic_blast_radius=2.7 < threshold=4 AND severity='critical' is auto-executable",
     "mitre_technique": "T1055 - Process Injection",
     "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363265+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107396+00:00"
   },
   {
     "incident_id": "INC-002",
     "action": "preserve_evidence",
     "target": "host-10.0.7.15",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=1 < threshold=4",
+    "reason": "dynamic_blast_radius=1.35 < threshold=4 AND severity='critical' is auto-executable",
     "mitre_technique": "T1055 - Process Injection",
     "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363270+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107402+00:00"
   },
   {
     "incident_id": "INC-002",
     "action": "alert_soc_team",
     "target": "host-10.0.7.15",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=1 < threshold=4",
+    "reason": "dynamic_blast_radius=1.35 < threshold=4 AND severity='critical' is auto-executable",
     "mitre_technique": "T1055 - Process Injection",
     "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363273+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107406+00:00"
   },
   {
     "incident_id": "INC-002",
     "action": "revoke_credentials",
     "target": "host-10.0.7.15",
     "decision": "QUEUED_FOR_HUMAN_APPROVAL",
-    "reason": "blast_radius=4 >= threshold=4",
+    "reason": "dynamic_blast_radius=5.4 (base=4 x criticality_mult=1.35, asset_criticality=5) >= threshold=4",
     "mitre_technique": "T1055 - Process Injection",
     "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363305+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107412+00:00"
   },
   {
     "incident_id": "INC-002",
     "action": "isolate_endpoint",
     "target": "host-10.0.7.15",
     "decision": "QUEUED_FOR_HUMAN_APPROVAL",
-    "reason": "blast_radius=4 >= threshold=4",
+    "reason": "dynamic_blast_radius=5.4 (base=4 x criticality_mult=1.35, asset_criticality=5) >= threshold=4",
     "mitre_technique": "T1055 - Process Injection",
     "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363310+00:00"
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107418+00:00"
   },
   {
     "incident_id": "INC-003",
     "action": "block_ip",
     "target": "203.0.113.45",
-    "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=2 < threshold=4",
+    "decision": "QUEUED_FOR_HUMAN_APPROVAL",
+    "reason": "severity='medium' not in auto-executable set {'critical', 'high'} (Module 1 detection confidence too low to trust unsupervised auto-response)",
     "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
-    "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363495+00:00"
+    "severity": "medium",
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107449+00:00"
   },
   {
     "incident_id": "INC-003",
     "action": "isolate_endpoint",
     "target": "203.0.113.45",
     "decision": "QUEUED_FOR_HUMAN_APPROVAL",
-    "reason": "blast_radius=4 >= threshold=4",
+    "reason": "dynamic_blast_radius=4.0 (base=4 x criticality_mult=1.0, asset_criticality=3) >= threshold=4; severity='medium' not in auto-executable set {'critical', 'high'} (Module 1 detection confidence too low to trust unsupervised auto-response)",
     "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
-    "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363502+00:00"
+    "severity": "medium",
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107487+00:00"
   },
   {
     "incident_id": "INC-003",
     "action": "preserve_evidence",
     "target": "203.0.113.45",
-    "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=1 < threshold=4",
+    "decision": "QUEUED_FOR_HUMAN_APPROVAL",
+    "reason": "severity='medium' not in auto-executable set {'critical', 'high'} (Module 1 detection confidence too low to trust unsupervised auto-response)",
     "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
-    "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363506+00:00"
+    "severity": "medium",
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107496+00:00"
   },
   {
     "incident_id": "INC-003",
     "action": "generate_incident_report",
     "target": "203.0.113.45",
+    "decision": "QUEUED_FOR_HUMAN_APPROVAL",
+    "reason": "severity='medium' not in auto-executable set {'critical', 'high'} (Module 1 detection confidence too low to trust unsupervised auto-response)",
+    "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+    "severity": "medium",
+    "is_part_of_correlated_campaign": false,
+    "timestamp": "2026-07-09T09:54:58.107544+00:00"
+  },
+  {
+    "incident_id": "INC-004",
+    "action": "block_ip",
+    "target": "host-10.0.7.15",
     "decision": "AUTO_EXECUTED",
-    "reason": "blast_radius=1 < threshold=4",
+    "reason": "dynamic_blast_radius=2.7 < threshold=4 AND severity='critical' is auto-executable",
     "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
     "severity": "critical",
-    "timestamp": "2026-07-08T06:07:45.363534+00:00"
+    "is_part_of_correlated_campaign": true,
+    "timestamp": "2026-07-09T09:54:58.107630+00:00"
+  },
+  {
+    "incident_id": "INC-004",
+    "action": "isolate_endpoint",
+    "target": "host-10.0.7.15",
+    "decision": "QUEUED_FOR_HUMAN_APPROVAL",
+    "reason": "dynamic_blast_radius=5.4 (base=4 x criticality_mult=1.35, asset_criticality=5) >= threshold=4",
+    "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+    "severity": "critical",
+    "is_part_of_correlated_campaign": true,
+    "timestamp": "2026-07-09T09:54:58.107638+00:00"
+  },
+  {
+    "incident_id": "INC-004",
+    "action": "preserve_evidence",
+    "target": "host-10.0.7.15",
+    "decision": "AUTO_EXECUTED",
+    "reason": "dynamic_blast_radius=1.35 < threshold=4 AND severity='critical' is auto-executable",
+    "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+    "severity": "critical",
+    "is_part_of_correlated_campaign": true,
+    "timestamp": "2026-07-09T09:54:58.107642+00:00"
+  },
+  {
+    "incident_id": "INC-004",
+    "action": "generate_incident_report",
+    "target": "host-10.0.7.15",
+    "decision": "AUTO_EXECUTED",
+    "reason": "dynamic_blast_radius=1.35 < threshold=4 AND severity='critical' is auto-executable",
+    "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+    "severity": "critical",
+    "is_part_of_correlated_campaign": true,
+    "timestamp": "2026-07-09T09:54:58.107648+00:00"
+  },
+  {
+    "incident_id": "INC-001",
+    "action": "revoke_credentials",
+    "target": "host-10.0.4.22",
+    "decision": "ROLLED_BACK",
+    "reason": "Confirmed false positive \u2014 action reversed",
+    "timestamp": "2026-07-09T09:54:58.107779+00:00"
+  },
+  {
+    "incident_id": "INC-001",
+    "action": "disable_account",
+    "target": "host-10.0.4.22",
+    "decision": "ROLLED_BACK",
+    "reason": "Confirmed false positive \u2014 action reversed",
+    "timestamp": "2026-07-09T09:54:58.107785+00:00"
+  },
+  {
+    "incident_id": "INC-001",
+    "action": "alert_soc_team",
+    "target": "host-10.0.4.22",
+    "decision": "ROLLED_BACK",
+    "reason": "Confirmed false positive \u2014 action reversed",
+    "timestamp": "2026-07-09T09:54:58.107788+00:00"
+  },
+  {
+    "incident_id": "INC-001",
+    "action": "preserve_evidence",
+    "target": "host-10.0.4.22",
+    "decision": "ROLLED_BACK",
+    "reason": "Confirmed false positive \u2014 action reversed",
+    "timestamp": "2026-07-09T09:54:58.107790+00:00"
   }
 ]

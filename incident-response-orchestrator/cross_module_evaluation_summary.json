@@ -1,0 +1,14 @@
+{
+  "n_incidents_evaluated": 33,
+  "severity_escalations_from_module4_context": 0,
+  "total_playbook_actions": 84,
+  "auto_executed_pct": 82.1,
+  "escalated_pct": 17.9,
+  "soc_capacity": {
+    "n_analysts": 2,
+    "avg_wait_minutes": 13.07,
+    "max_wait_minutes": 28.0,
+    "total_approvals_queued": 15
+  },
+  "compliance_violations": 0
+}

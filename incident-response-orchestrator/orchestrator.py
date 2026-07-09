@@ -4,13 +4,21 @@ Module 3 — Point 3 of PS7
 
 Given an attributed threat (tactics + severity from Module 2), this engine:
 1. Selects the appropriate response playbook
-2. Auto-executes low-blast-radius actions immediately (simulated on an
-   in-memory network state — endpoints, credentials, IP blocklist)
-3. Places high-blast-radius actions into a human-approval queue instead of
-   auto-executing them (matches problem statement's escalation-gate requirement)
-4. Logs every decision to an auditable trail (timestamp, action, reasoning,
-   auto/human-gated) — full auditability as required by evaluation focus
-5. Computes time-savings vs a typical manual SOC response
+2. Computes a DYNAMIC blast radius that combines the action's intrinsic
+   disruption potential with the REAL criticality of the target asset
+   (cross-referenced from Module 4's CNI asset inventory) — isolating a
+   printer and isolating a SCADA turbine controller are not the same decision
+3. Factors in detection confidence (Module 1's known ~80% accuracy) before
+   auto-executing — low-confidence flags get escalated even for otherwise
+   low-blast-radius actions, to avoid disrupting operations on a false alarm
+4. Auto-executes low-risk actions immediately (simulated on an in-memory
+   network state), queues high-risk ones for human approval
+5. Supports ROLLBACK of auto-executed actions if later confirmed a false
+   positive — a real SOAR capability, not just one-way containment
+6. Correlates multiple incidents on the SAME target within a short window
+   into one coordinated response instead of duplicate/conflicting actions
+7. Logs every decision to an auditable trail — full auditability as
+   required by evaluation focus
 """
 
 import json
@@ -18,6 +26,23 @@ import time
 from datetime import datetime, timezone
 
 from playbooks import ACTIONS, get_playbook_for_tactics, HUMAN_APPROVAL_THRESHOLD
+
+# Confidence-to-severity mapping: only "critical"/"high" severity flags are
+# trusted enough to auto-execute anything; "medium"/"low" always escalate,
+# regardless of the action's own blast radius — because Module 1's ~80%
+# test accuracy means a meaningful fraction of medium/low flags are noise,
+# and auto-containing on noise has a real operational cost.
+AUTO_EXECUTABLE_SEVERITIES = {"critical", "high"}
+
+# Asset criticality (1-5, from Module 4's inventory) multiplies the action's
+# base blast radius. A blast_radius-2 action on a criticality-5 OT asset
+# becomes effectively a 3.0 -- more likely to require sign-off than the same
+# action on a criticality-1 printer.
+CRITICALITY_MULTIPLIER = {1: 0.7, 2: 0.85, 3: 1.0, 4: 1.15, 5: 1.35}
+
+# Correlation window: incidents on the same target within this many seconds
+# are treated as one coordinated campaign, not independent duplicate alerts.
+CORRELATION_WINDOW_SECONDS = 300
 
 
 class NetworkState:
@@ -43,8 +68,18 @@ class NetworkState:
             self.vm_snapshots.append({"target": target, "time": datetime.now(timezone.utc).isoformat()})
         elif action_name == "generate_incident_report":
             self.incident_reports.append({"target": target, "time": datetime.now(timezone.utc).isoformat()})
-        # alert_soc_team, preserve_evidence, kill_process, network_segment_isolation:
-        # logged only (no persistent state change needed for this simulation)
+
+    def undo_action(self, action_name, target):
+        """Reverses an auto-executed action — used when later confirmed a false positive."""
+        if action_name == "isolate_endpoint":
+            self.isolated_endpoints.discard(target)
+        elif action_name == "block_ip":
+            self.blocked_ips.discard(target)
+        elif action_name == "disable_account":
+            self.disabled_accounts.discard(target)
+        elif action_name == "revoke_credentials":
+            self.revoked_credentials.discard(target)
+        # snapshots/reports are historical records, not reversed
 
     def snapshot(self):
         return {
@@ -58,20 +93,55 @@ class NetworkState:
 
 
 class IncidentResponseOrchestrator:
-    def __init__(self):
+    def __init__(self, asset_criticality_lookup=None):
         self.network_state = NetworkState()
         self.audit_log = []
         self.pending_human_approval = []
+        self.executed_actions_log = []  # for rollback support
+        # target -> list of (incident_id, timestamp) for campaign correlation
+        self.recent_incidents_by_target = {}
+        self.correlated_campaigns = []
+        # target -> criticality (1-5); defaults to 3 (medium) if unknown
+        self.asset_criticality_lookup = asset_criticality_lookup or {}
 
     def _log(self, entry: dict):
         entry["timestamp"] = datetime.now(timezone.utc).isoformat()
         self.audit_log.append(entry)
 
+    def _get_criticality(self, target):
+        return self.asset_criticality_lookup.get(target, 3)
+
+    def _check_campaign_correlation(self, incident_id, target):
+        """
+        If another incident hit the SAME target very recently, treat this
+        as part of a coordinated campaign rather than an isolated event —
+        real SOAR systems must avoid duplicate/conflicting responses when
+        an attacker is clearly moving through multiple stages on one host.
+        """
+        now = time.time()
+        prior = self.recent_incidents_by_target.get(target, [])
+        prior = [(iid, t) for iid, t in prior if now - t < CORRELATION_WINDOW_SECONDS]
+
+        is_campaign = len(prior) > 0
+        if is_campaign:
+            campaign_ids = [iid for iid, _ in prior] + [incident_id]
+            self.correlated_campaigns.append({"target": target, "incident_ids": campaign_ids})
+
+        prior.append((incident_id, now))
+        self.recent_incidents_by_target[target] = prior
+        return is_campaign
+
     def respond(self, incident_id: str, target: str, tactics: list, severity: str, mitre_technique: str):
         """
         Core orchestration decision: given an attributed incident, select and
-        execute (or queue for approval) the appropriate playbook actions.
+        execute (or queue for approval) the appropriate playbook actions,
+        using DYNAMIC blast radius (action x asset criticality) and
+        confidence-aware gating (severity must be high/critical to auto-execute).
         """
+        is_campaign = self._check_campaign_correlation(incident_id, target)
+        asset_criticality = self._get_criticality(target)
+        multiplier = CRITICALITY_MULTIPLIER.get(asset_criticality, 1.0)
+
         playbook = get_playbook_for_tactics(tactics)
         executed, queued = [], []
         total_manual_minutes, total_auto_seconds = 0, 0
@@ -79,40 +149,51 @@ class IncidentResponseOrchestrator:
         for action_name in playbook:
             action_meta = ACTIONS[action_name]
             total_manual_minutes += action_meta["manual_minutes"]
+            dynamic_blast_radius = round(action_meta["blast_radius"] * multiplier, 2)
 
-            if action_meta["blast_radius"] >= HUMAN_APPROVAL_THRESHOLD:
-                # High blast radius -> human-in-the-loop, do NOT auto-execute
+            # Two independent gates must BOTH pass to auto-execute:
+            # (1) dynamic blast radius below threshold, (2) detection confidence high enough
+            confidence_ok = severity in AUTO_EXECUTABLE_SEVERITIES
+            blast_ok = dynamic_blast_radius < HUMAN_APPROVAL_THRESHOLD
+
+            if not (confidence_ok and blast_ok):
+                reason_parts = []
+                if not blast_ok:
+                    reason_parts.append(f"dynamic_blast_radius={dynamic_blast_radius} (base={action_meta['blast_radius']} x criticality_mult={multiplier}, asset_criticality={asset_criticality}) >= threshold={HUMAN_APPROVAL_THRESHOLD}")
+                if not confidence_ok:
+                    reason_parts.append(f"severity='{severity}' not in auto-executable set {AUTO_EXECUTABLE_SEVERITIES} (Module 1 detection confidence too low to trust unsupervised auto-response)")
                 entry = {
                     "incident_id": incident_id, "action": action_name, "target": target,
                     "decision": "QUEUED_FOR_HUMAN_APPROVAL",
-                    "reason": f"blast_radius={action_meta['blast_radius']} >= threshold={HUMAN_APPROVAL_THRESHOLD}",
-                    "mitre_technique": mitre_technique, "severity": severity
+                    "reason": "; ".join(reason_parts),
+                    "mitre_technique": mitre_technique, "severity": severity,
+                    "is_part_of_correlated_campaign": is_campaign
                 }
                 self._log(entry)
                 self.pending_human_approval.append(entry)
                 queued.append(action_name)
             else:
-                # Low/medium blast radius -> auto-execute immediately
-                start = time.time()
                 self.network_state.apply_action(action_name, target)
                 total_auto_seconds += action_meta["auto_seconds"]
+                self.executed_actions_log.append({"incident_id": incident_id, "action": action_name, "target": target})
                 entry = {
                     "incident_id": incident_id, "action": action_name, "target": target,
                     "decision": "AUTO_EXECUTED",
-                    "reason": f"blast_radius={action_meta['blast_radius']} < threshold={HUMAN_APPROVAL_THRESHOLD}",
-                    "mitre_technique": mitre_technique, "severity": severity
+                    "reason": f"dynamic_blast_radius={dynamic_blast_radius} < threshold={HUMAN_APPROVAL_THRESHOLD} AND severity='{severity}' is auto-executable",
+                    "mitre_technique": mitre_technique, "severity": severity,
+                    "is_part_of_correlated_campaign": is_campaign
                 }
                 self._log(entry)
                 executed.append(action_name)
 
-        automatable_minutes = sum(
-            ACTIONS[a]["manual_minutes"] for a in executed
-        )
+        automatable_minutes = sum(ACTIONS[a]["manual_minutes"] for a in executed)
         automated_seconds = sum(ACTIONS[a]["auto_seconds"] for a in executed)
         time_saved_minutes = automatable_minutes - (automated_seconds / 60)
 
         return {
             "incident_id": incident_id,
+            "is_part_of_correlated_campaign": is_campaign,
+            "asset_criticality": asset_criticality,
             "playbook_actions": playbook,
             "auto_executed": executed,
             "queued_for_human_approval": queued,
@@ -133,14 +214,36 @@ class IncidentResponseOrchestrator:
             if not (p["incident_id"] == incident_id and p["action"] == action)
         ]
 
+    def rollback_false_positive(self, incident_id: str):
+        """
+        Reverses all auto-executed actions for an incident later confirmed
+        to be a false positive. Real containment has a real operational
+        cost, so the ability to safely undo matters as much as the ability
+        to act quickly.
+        """
+        actions_to_undo = [a for a in self.executed_actions_log if a["incident_id"] == incident_id]
+        for a in actions_to_undo:
+            self.network_state.undo_action(a["action"], a["target"])
+            self._log({
+                "incident_id": incident_id, "action": a["action"], "target": a["target"],
+                "decision": "ROLLED_BACK", "reason": "Confirmed false positive — action reversed"
+            })
+        return len(actions_to_undo)
+
     def get_audit_trail(self):
         return self.audit_log
 
 
 if __name__ == "__main__":
-    orchestrator = IncidentResponseOrchestrator()
+    # Simulated criticality lookup, mirroring Module 4's asset inventory
+    asset_criticality = {
+        "host-10.0.4.22": 2,   # low-criticality workstation
+        "host-10.0.7.15": 5,   # SCADA/OT host
+        "203.0.113.45": 3,     # external IP, unknown asset
+    }
+    orchestrator = IncidentResponseOrchestrator(asset_criticality_lookup=asset_criticality)
 
-    print("=== Simulating incident response for 3 attributed threats ===\n")
+    print("=== Simulating incident response for 3 attributed threats (with dynamic blast radius) ===\n")
 
     incidents = [
         {"incident_id": "INC-001", "target": "host-10.0.4.22", "tactics": ["credential-access"],
@@ -148,26 +251,37 @@ if __name__ == "__main__":
         {"incident_id": "INC-002", "target": "host-10.0.7.15", "tactics": ["stealth", "privilege-escalation"],
          "severity": "critical", "mitre_technique": "T1055 - Process Injection"},
         {"incident_id": "INC-003", "target": "203.0.113.45", "tactics": ["exfiltration"],
-         "severity": "critical", "mitre_technique": "T1041 - Exfiltration Over C2 Channel"},
+         "severity": "medium", "mitre_technique": "T1041 - Exfiltration Over C2 Channel"},
     ]
 
     for inc in incidents:
         result = orchestrator.respond(**inc)
-        print(f"--- {inc['incident_id']} ({inc['mitre_technique']}) ---")
+        print(f"--- {inc['incident_id']} ({inc['mitre_technique']}) — asset_criticality={result['asset_criticality']} ---")
         print(f"  Auto-executed: {result['auto_executed']}")
         print(f"  Queued for human approval: {result['queued_for_human_approval']}")
         print(f"  Manual baseline: {result['estimated_manual_response_minutes']} min | "
               f"Automated: {result['automated_response_seconds']}s | "
               f"Time saved (automatable subset): {result['time_saved_on_automatable_actions_minutes']} min\n")
 
-    print("=== Network state after all responses (simulated) ===")
-    print(json.dumps(orchestrator.network_state.snapshot(), indent=2))
+    print("=== Demonstrating campaign correlation: a 4th incident hits the SAME host as INC-002 ===")
+    inc4 = {"incident_id": "INC-004", "target": "host-10.0.7.15", "tactics": ["exfiltration"],
+            "severity": "critical", "mitre_technique": "T1041 - Exfiltration Over C2 Channel"}
+    result4 = orchestrator.respond(**inc4)
+    print(f"  INC-004 flagged as part of correlated campaign: {result4['is_part_of_correlated_campaign']}")
+    print(f"  Correlated campaigns detected so far: {orchestrator.correlated_campaigns}\n")
 
-    print(f"\n=== {len(orchestrator.pending_human_approval)} actions awaiting human approval ===")
+    print("=== Demonstrating rollback: INC-001 is later confirmed a FALSE POSITIVE ===")
+    print(f"  State before rollback: {orchestrator.network_state.snapshot()}")
+    n_undone = orchestrator.rollback_false_positive("INC-001")
+    print(f"  Rolled back {n_undone} action(s)")
+    print(f"  State after rollback: {orchestrator.network_state.snapshot()}\n")
+
+    print(f"=== {len(orchestrator.pending_human_approval)} actions awaiting human approval ===")
     for p in orchestrator.pending_human_approval:
-        print(f"  {p['incident_id']}: {p['action']} on {p['target']} ({p['reason']})")
+        print(f"  {p['incident_id']}: {p['action']} on {p['target']} ({p['reason'][:80]}...)")
 
     print(f"\n=== Full audit trail: {len(orchestrator.audit_log)} logged decisions ===")
     with open("audit_trail_sample.json", "w") as f:
         json.dump(orchestrator.get_audit_trail(), f, indent=2)
     print("Saved audit_trail_sample.json")
+

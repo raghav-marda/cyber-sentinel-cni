@@ -16,13 +16,14 @@ and reports:
 import sys
 sys.path.append("../anomaly-detection")
 sys.path.append("../attribution-agent")
+sys.path.append("../vulnerability-prioritization")
 
 import json
 import joblib
 import pandas as pd
 
 from playbooks import ACTIONS, HUMAN_APPROVAL_THRESHOLD
-from orchestrator import IncidentResponseOrchestrator
+from orchestrator import IncidentResponseOrchestrator, CRITICALITY_MULTIPLIER, AUTO_EXECUTABLE_SEVERITIES
 
 
 def run_full_pipeline_batch(n_incidents=20):
@@ -30,6 +31,7 @@ def run_full_pipeline_batch(n_incidents=20):
     from anomaly_model import check_single_event
     from attribution_agent import AttributionAgent
     from pipeline_bridge import event_to_description, run_full_pipeline
+    from asset_matcher import ASSET_INVENTORY
 
     print("Loading Module 1 (anomaly model)...")
     model = joblib.load("../anomaly-detection/anomaly_model.pkl")
@@ -40,8 +42,12 @@ def run_full_pipeline_batch(n_incidents=20):
     print("Loading Module 2 (attribution agent)...")
     agent = AttributionAgent()
 
-    print("Initializing Module 3 (orchestrator)...")
-    orchestrator = IncidentResponseOrchestrator()
+    print("Initializing Module 3 (orchestrator) with REAL Module 4 asset criticality...")
+    # Cross-module integration: map each simulated incident to a real asset
+    # from Module 4's CNI inventory, so blast-radius decisions reflect actual
+    # asset criticality rather than an arbitrary placeholder.
+    asset_criticality_lookup = {a["asset_id"]: a["criticality"] for a in ASSET_INVENTORY}
+    orchestrator = IncidentResponseOrchestrator(asset_criticality_lookup=asset_criticality_lookup)
 
     train_df, test_df = load_data("../data/nsl-kdd/KDDTrain+.txt", "../data/nsl-kdd/KDDTest+.txt")
     attack_rows = test_df[test_df["label"] != "normal"].sample(n=n_incidents, random_state=42)
@@ -58,7 +64,9 @@ def run_full_pipeline_batch(n_incidents=20):
 
         top_attribution = pipeline_result["mitre_attribution"][0]
         incident_id = f"INC-{idx+1:03d}"
-        target = f"host-sim-{idx+1}"
+        # Assign each incident to a real Module 4 asset (cycling through inventory)
+        target_asset = ASSET_INVENTORY[idx % len(ASSET_INVENTORY)]
+        target = target_asset["asset_id"]
 
         response = orchestrator.respond(
             incident_id=incident_id, target=target,
@@ -68,6 +76,7 @@ def run_full_pipeline_batch(n_incidents=20):
         results.append({
             "true_label": row["label"], "detected": True,
             "mitre_technique": top_attribution["mitre_id"],
+            "target_asset": target, "asset_criticality": target_asset["criticality"],
             **response
         })
 
@@ -76,17 +85,28 @@ def run_full_pipeline_batch(n_incidents=20):
 
 def compliance_safety_check(orchestrator):
     """
-    Critical safety audit: verify NO action with blast_radius >= threshold
-    was ever auto-executed without a human-approval log entry.
+    Critical safety audit: verify every AUTO_EXECUTED entry actually satisfied
+    BOTH gates — dynamic blast radius below threshold AND severity in the
+    auto-executable confidence set. Since blast radius is now dynamic
+    (action x real asset criticality), this check parses the logged
+    dynamic value directly rather than re-deriving it from a static table.
     """
     violations = []
     for entry in orchestrator.audit_log:
-        action = entry.get("action")
-        if action not in ACTIONS:
+        if entry["decision"] != "AUTO_EXECUTED":
             continue
-        blast_radius = ACTIONS[action]["blast_radius"]
-        if blast_radius >= HUMAN_APPROVAL_THRESHOLD and entry["decision"] == "AUTO_EXECUTED":
-            violations.append(entry)
+        if entry["severity"] not in AUTO_EXECUTABLE_SEVERITIES:
+            violations.append({**entry, "violation": "auto-executed despite non-auto-executable severity"})
+            continue
+        # dynamic_blast_radius is embedded in the reason string; parse it back out
+        try:
+            reason = entry["reason"]
+            blast_val = float(reason.split("dynamic_blast_radius=")[1].split(" ")[0])
+            if blast_val >= HUMAN_APPROVAL_THRESHOLD:
+                violations.append({**entry, "violation": f"auto-executed with blast_radius={blast_val} >= threshold"})
+        except (IndexError, ValueError):
+            pass  # non-parseable reason (e.g. rollback/approval entries) - skip
+
     return {
         "total_audit_entries": len(orchestrator.audit_log),
         "compliance_violations_found": len(violations),
@@ -119,6 +139,13 @@ if __name__ == "__main__":
         print(f"\nAggregate manual response baseline: {total_manual} minutes")
         print(f"Aggregate automated response time: {total_auto_sec} seconds ({total_auto_sec/60:.2f} minutes)")
         print(f"Time saved on auto-executable actions: {total_saved:.1f} minutes")
+
+    print("\n" + "=" * 90)
+    print("CAMPAIGN CORRELATION")
+    print("=" * 90)
+    print(f"Correlated multi-incident campaigns detected: {len(orchestrator.correlated_campaigns)}")
+    for c in orchestrator.correlated_campaigns:
+        print(f"  Target {c['target']}: incidents {c['incident_ids']} grouped as one campaign")
 
     print("\n" + "=" * 90)
     print("COMPLIANCE / SAFETY AUDIT")
