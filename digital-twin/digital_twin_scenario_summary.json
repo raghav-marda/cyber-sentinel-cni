@@ -1,0 +1,124 @@
+{
+  "Baseline (current state)": {
+    "critical_targets_still_reachable": 5,
+    "critical_targets_total": 5,
+    "average_exploit_cost_to_reachable_targets": 11.68,
+    "path_details": {
+      "PLC-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "PLC-01"
+      ],
+      "SCADA-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01"
+      ],
+      "WIN-DC-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01"
+      ],
+      "DB-01": [
+        "INTERNET",
+        "WEB-01",
+        "DB-01"
+      ],
+      "RTU-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "RTU-01"
+      ]
+    }
+  },
+  "IT/OT segmentation only": {
+    "critical_targets_still_reachable": 2,
+    "critical_targets_total": 5,
+    "average_exploit_cost_to_reachable_targets": 4.48,
+    "path_details": {
+      "PLC-01": null,
+      "SCADA-01": null,
+      "WIN-DC-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01"
+      ],
+      "DB-01": [
+        "INTERNET",
+        "WEB-01",
+        "DB-01"
+      ],
+      "RTU-01": null
+    }
+  },
+  "Patch top-3 CVEs only (WEB-01, MAIL-01, DB-01)": {
+    "critical_targets_still_reachable": 5,
+    "critical_targets_total": 5,
+    "average_exploit_cost_to_reachable_targets": 14.28,
+    "path_details": {
+      "PLC-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "PLC-01"
+      ],
+      "SCADA-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01"
+      ],
+      "WIN-DC-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01"
+      ],
+      "DB-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "DB-01"
+      ],
+      "RTU-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "RTU-01"
+      ]
+    }
+  },
+  "Segmentation + patching (combined)": {
+    "critical_targets_still_reachable": 2,
+    "critical_targets_total": 5,
+    "average_exploit_cost_to_reachable_targets": 10.98,
+    "path_details": {
+      "PLC-01": null,
+      "SCADA-01": null,
+      "WIN-DC-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01"
+      ],
+      "DB-01": [
+        "INTERNET",
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "DB-01"
+      ],
+      "RTU-01": null
+    }
+  }
+}

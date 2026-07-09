@@ -1,0 +1,111 @@
+[
+  {
+    "scenario": "Ransomware via phishing email",
+    "narrative": "Phishing email compromises a user credential on the mail server, attacker pivots to the domain controller, then to backup and database systems.",
+    "entry_point": "MAIL-01",
+    "critical_assets_reachable": [
+      "PLC-01",
+      "SCADA-01",
+      "WIN-DC-01",
+      "DB-01",
+      "RTU-01"
+    ],
+    "total_criticality_at_risk": 25,
+    "module1_detection_probability": 0.086,
+    "expected_undetected_risk": 22.85,
+    "paths": {
+      "PLC-01": [
+        "MAIL-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "PLC-01"
+      ],
+      "SCADA-01": [
+        "MAIL-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01"
+      ],
+      "WIN-DC-01": [
+        "MAIL-01",
+        "WIN-DC-01"
+      ],
+      "DB-01": [
+        "MAIL-01",
+        "WIN-DC-01",
+        "DB-01"
+      ],
+      "RTU-01": [
+        "MAIL-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "RTU-01"
+      ]
+    }
+  },
+  {
+    "scenario": "Compromised VPN credentials (insider-adjacent)",
+    "narrative": "Stolen VPN credentials give direct internal network access, bypassing perimeter defenses entirely.",
+    "entry_point": "VPN-GW-01",
+    "critical_assets_reachable": [
+      "PLC-01",
+      "SCADA-01",
+      "WIN-DC-01",
+      "DB-01",
+      "RTU-01"
+    ],
+    "total_criticality_at_risk": 25,
+    "module1_detection_probability": 0.086,
+    "expected_undetected_risk": 22.85,
+    "paths": {
+      "PLC-01": [
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "PLC-01"
+      ],
+      "SCADA-01": [
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01"
+      ],
+      "WIN-DC-01": [
+        "VPN-GW-01",
+        "WIN-DC-01"
+      ],
+      "DB-01": [
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "DB-01"
+      ],
+      "RTU-01": [
+        "VPN-GW-01",
+        "WIN-DC-01",
+        "LNX-APP-01",
+        "SCADA-01",
+        "RTU-01"
+      ]
+    }
+  },
+  {
+    "scenario": "Web portal exploitation (opportunistic)",
+    "narrative": "Public-facing web portal is exploited directly, attacker pivots to the citizen records database.",
+    "entry_point": "WEB-01",
+    "critical_assets_reachable": [
+      "DB-01"
+    ],
+    "total_criticality_at_risk": 5,
+    "module1_detection_probability": 0.793,
+    "expected_undetected_risk": 1.03,
+    "paths": {
+      "DB-01": [
+        "WEB-01",
+        "DB-01"
+      ]
+    }
+  }
+]
