@@ -1,0 +1,43 @@
+{
+  "unsupervised_baseline": {
+    "DoS": 79.3,
+    "Probe": 88.3,
+    "R2L": 8.6,
+    "U2R": 28.4
+  },
+  "supervised_results": {
+    "DoS": {
+      "n_samples": 7460,
+      "detected_as_any_attack_pct": 77.1,
+      "correctly_classified_exact_category_pct": 76.6
+    },
+    "Probe": {
+      "n_samples": 2421,
+      "detected_as_any_attack_pct": 66.2,
+      "correctly_classified_exact_category_pct": 59.4
+    },
+    "R2L": {
+      "n_samples": 2885,
+      "detected_as_any_attack_pct": 0.6,
+      "correctly_classified_exact_category_pct": 0.1
+    },
+    "U2R": {
+      "n_samples": 67,
+      "detected_as_any_attack_pct": 4.5,
+      "correctly_classified_exact_category_pct": 1.5
+    }
+  },
+  "top_features": {
+    "src_bytes": 0.11540527067252777,
+    "dst_host_srv_count": 0.0886035078587372,
+    "dst_bytes": 0.07573862213903444,
+    "service": 0.07361573085072053,
+    "logged_in": 0.06036261215952602,
+    "dst_host_serror_rate": 0.04072428063595483,
+    "srv_count": 0.039124188802936125,
+    "dst_host_same_src_port_rate": 0.03902838706761319,
+    "dst_host_diff_srv_rate": 0.03859172009766114,
+    "count": 0.03528171981008157
+  },
+  "note": "Supervised classifier sees labelled examples during training (995 R2L, 52 U2R samples) with class-balancing. This is expected to outperform the unsupervised anomaly engine on these categories specifically, since unsupervised methods have no access to labels at all. Both approaches are kept in the pipeline: unsupervised for zero-day/unknown behaviour, supervised as a second-opinion layer for known attack patterns."
+}
