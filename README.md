@@ -272,8 +272,8 @@ streamlit run app.py
 - [x] Module 4: Vulnerability Prioritisation (real NVD data, threat-actor context, capacity scheduling)
 - [x] Module 5: Cyber Resilience Digital Twin (attack-path simulation, investment impact assessment)
 - [x] Unified dashboard integrating all 5 modules (Streamlit)
-- [ ] Improve R2L/U2R detection via supervised fine-tuning on labelled subsets
-- [ ] Upgrade retrieval from TF-IDF to semantic embeddings (production enhancement)
+- [x] Investigated R2L/U2R detection improvement via supervised fine-tuning — **finding: it makes things worse, not better.** Root cause: 29.2% of test-set attacks are types never seen in training (zero-day simulation built into NSL-KDD), which a supervised model cannot recognize by definition. This empirically validates the platform's unsupervised/behavioural design rather than exposing a fixable gap. See [`anomaly-detection/supervised_r2l_u2r_improvement_summary.json`](anomaly-detection/supervised_r2l_u2r_improvement_summary.json).
+- [x] Investigated upgrading retrieval from TF-IDF to semantic embeddings — trained a from-scratch Word2Vec model and tested it two ways. On a held-out paraphrase benchmark it scored 92.7% (misleadingly high — it was memorizing each technique's unique vocabulary on a small 697-document corpus, not generalizing semantically). On a hand-labeled 20-query realistic SOC benchmark, it dropped to 15-25% while TF-IDF+keyword-boost held at 45%. **Kept TF-IDF in production** — a real semantic upgrade would need pretrained embeddings, which need model weights this sandbox can't download. See [`attribution-agent/soc_benchmark_comparison.json`](attribution-agent/soc_benchmark_comparison.json).
 
 ---
 
