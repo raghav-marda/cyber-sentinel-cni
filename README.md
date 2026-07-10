@@ -200,7 +200,7 @@ cyber-sentinel-cni/
 ├── incident-response-orchestrator/   # Module 3
 ├── vulnerability-prioritization/     # Module 4
 ├── digital-twin/                     # Module 5
-└── frontend/                         # Unified dashboard (planned)
+└── frontend/                         # Unified dashboard (Streamlit, app.py)
 ```
 
 ---
@@ -246,6 +246,12 @@ python3 attack_path_simulator.py
 python3 investment_impact.py
 python3 red_team_scenarios.py
 python3 visualize_topology.py
+
+# Unified Dashboard (run after all 5 modules have been executed at least once,
+# so their result files exist for the dashboard to load)
+cd ../frontend
+pip install -r requirements.txt
+streamlit run app.py
 ```
 
 ---
@@ -265,7 +271,7 @@ python3 visualize_topology.py
 - [x] Module 3: Autonomous Incident Response Orchestrator (dynamic blast radius, 100% compliance audit)
 - [x] Module 4: Vulnerability Prioritisation (real NVD data, threat-actor context, capacity scheduling)
 - [x] Module 5: Cyber Resilience Digital Twin (attack-path simulation, investment impact assessment)
-- [ ] Unified dashboard integrating all 5 modules
+- [x] Unified dashboard integrating all 5 modules (Streamlit)
 - [ ] Improve R2L/U2R detection via supervised fine-tuning on labelled subsets
 - [ ] Upgrade retrieval from TF-IDF to semantic embeddings (production enhancement)
 
