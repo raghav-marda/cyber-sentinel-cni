@@ -1,0 +1,233 @@
+{
+  "tfidf_keyword_boost": {
+    "top1_accuracy": 0.45,
+    "top3_accuracy": 0.45
+  },
+  "semantic_word2vec": {
+    "top1_accuracy": 0.15,
+    "top3_accuracy": 0.25
+  },
+  "verdict": "tfidf",
+  "query_details": [
+    {
+      "query": "repeated failed logins followed by one successful login with valid creds",
+      "expected": "T1110",
+      "retrieved": [
+        "T1110",
+        "T1217",
+        "T1657"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "someone is guessing passwords against our login page",
+      "expected": "T1110",
+      "retrieved": [
+        "T1056.003",
+        "T1110.001",
+        "T1137.004"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "attacker is using stolen but valid account credentials to log in",
+      "expected": "T1078",
+      "retrieved": [
+        "T1078",
+        "T1563",
+        "T1550.001"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "a process injected itself into another process's memory to hide",
+      "expected": "T1055",
+      "retrieved": [
+        "T1055",
+        "T1055.001",
+        "T1055.002"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "malware is trying to escalate to root/admin privileges",
+      "expected": "T1068",
+      "retrieved": [
+        "T1548.004",
+        "T1543",
+        "T1563.002"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "large amount of data being sent to an external server we don't recognize",
+      "expected": "T1041",
+      "retrieved": [
+        "T1560",
+        "T1048.003",
+        "T1048.001"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "host is scanning many ports across the internal subnet",
+      "expected": "T1046",
+      "retrieved": [
+        "T1046",
+        "T1595",
+        "T1595.002"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "attacker is probing which hosts and services exist on the network",
+      "expected": "T1595",
+      "retrieved": [
+        "T1046",
+        "T1018",
+        "T1567"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "phishing email with a malicious link sent to employees",
+      "expected": "T1566",
+      "retrieved": [
+        "T1566",
+        "T1204.001",
+        "T1608.005"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "ransomware encrypted files across multiple systems",
+      "expected": "T1486",
+      "retrieved": [
+        "T1486",
+        "T1679",
+        "T1059.004"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "attacker moved from one compromised machine to another using RDP",
+      "expected": "T1021",
+      "retrieved": [
+        "T1563.002",
+        "T1021.001",
+        "T1068"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "command and control traffic disguised as normal web traffic",
+      "expected": "T1071",
+      "retrieved": [
+        "T1071",
+        "T1071.001",
+        "T1001.003"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "attacker is deleting log files to cover their tracks",
+      "expected": "T1070",
+      "retrieved": [
+        "T1070.003",
+        "T1685.006",
+        "T1027.003"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "a scheduled task was created to maintain access after reboot",
+      "expected": "T1053",
+      "retrieved": [
+        "T1053",
+        "T1053.005",
+        "T1029"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "attacker dumped credentials from memory on a compromised host",
+      "expected": "T1003",
+      "retrieved": [
+        "T1555.005",
+        "T1003.007",
+        "T1112"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "suspicious PowerShell script execution with obfuscated code",
+      "expected": "T1059",
+      "retrieved": [
+        "T1546.013",
+        "T1027.003",
+        "T1059.001"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "attacker is flooding a server with traffic to take it offline",
+      "expected": "T1499",
+      "retrieved": [
+        "T1498.001",
+        "T1583.002",
+        "T1071.001"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "unauthorized firmware modification on a network device",
+      "expected": "T1542",
+      "retrieved": [
+        "T1542.005",
+        "T1542.004",
+        "T1495"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    },
+    {
+      "query": "attacker is using a valid but unusual remote desktop session",
+      "expected": "T1021.001",
+      "retrieved": [
+        "T1021.001",
+        "T1563.002",
+        "T1219.002"
+      ],
+      "top1_hit": true,
+      "top3_hit": true
+    },
+    {
+      "query": "data was archived and compressed before being exfiltrated",
+      "expected": "T1560",
+      "retrieved": [
+        "T1041",
+        "T1048",
+        "T1027"
+      ],
+      "top1_hit": false,
+      "top3_hit": false
+    }
+  ]
+}

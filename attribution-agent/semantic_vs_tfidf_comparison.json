@@ -1,0 +1,12 @@
+{
+  "semantic_word2vec": {
+    "n_evaluated": 150,
+    "top1_accuracy": 0.9267,
+    "top3_accuracy": 0.9733
+  },
+  "tfidf_keyword_boost": {
+    "n_evaluated": 150,
+    "top1_accuracy": 0.6267,
+    "top3_accuracy": 0.96
+  }
+}
