@@ -2,9 +2,10 @@
 
 **AI-Driven Cyber Resilience for Critical National Infrastructure**
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Status](https://img.shields.io/badge/status-submission%20ready-brightgreen)
 ![Hackathon](https://img.shields.io/badge/ET%20AI%20Hackathon-2026-blue)
 ![Problem Statement](https://img.shields.io/badge/PS-7-orange)
+![Modules](https://img.shields.io/badge/modules-5%2F5%20complete-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-Hackathon%20Prototype-lightgrey)
 
@@ -23,7 +24,7 @@ Built solo for **ET AI Hackathon 2026 — Problem Statement 7**.
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
 - [Datasets](#-datasets)
-- [Roadmap](#-roadmap)
+- [Research Findings](#-research-findings-roadmap-investigations)
 
 ---
 
@@ -39,64 +40,65 @@ Critical national infrastructure — power grids, government systems, financial 
 5. Prioritizes vulnerability remediation using real CVE data contextualized by asset criticality and active threat-actor targeting
 6. Simulates attack paths and security-investment impact on a digital twin — without touching live systems
 
+All **five** capabilities named in the official problem statement are fully implemented, cross-integrated, and evaluated with real data — not five isolated demos.
+
 ---
 
 ## 🏗️ Architecture
 
-```
-                    ┌─────────────────────────┐
-                    │   Raw Network Traffic    │
-                    │   (NSL-KDD / live feed)  │
-                    └────────────┬─────────────┘
-                                 │
-                    ┌────────────▼─────────────┐
-                    │   MODULE 1                 │
-                    │   Behavioural Anomaly      │
-                    │   Detection Engine         │
-                    │   (Ensemble: Statistical   │
-                    │   Z-score + Isolation      │
-                    │   Forest)                  │
-                    └────────────┬─────────────┘
-                                 │ flagged anomaly + severity
-                    ┌────────────▼─────────────┐
-                    │   Pipeline Bridge           │
-                    │   (event → NL description)  │
-                    └────────────┬─────────────┘
-                                 │ behaviour description
-                    ┌────────────▼─────────────┐
-                    │   MODULE 2                  │
-                    │   APT Attribution Agent      │
-                    │   (Hybrid RAG: TF-IDF +      │
-                    │   keyword rules over MITRE   │
-                    │   ATT&CK, 697 techniques)     │
-                    └────────────┬─────────────┘
-                                 │ technique + tactics + threat group
-                    ┌────────────▼─────────────┐
-                    │   MODULE 3                   │
-                    │   Incident Response           │
-                    │   Orchestrator (dynamic       │
-                    │   blast radius, escalation     │
-                    │   gates, rollback, audit)      │
-                    └────────────┬─────────────┘
-                                 │
-                    ┌────────────▼─────────────┐        ┌───────────────────────┐
-                    │   MODULE 4                   │◄─────►│   MODULE 5              │
-                    │   Vulnerability Prioritisation│        │   Cyber Resilience      │
-                    │   (real NVD data, threat-actor │        │   Digital Twin           │
-                    │   context, capacity scheduling) │        │   (attack-path sim,      │
-                    └───────────────────────────────┘        │   investment impact)     │
-                                                              └───────────────────────┘
-                                 │
-                    ┌────────────▼─────────────┐
-                    │   Unified Dashboard         │
-                    └───────────────────────────┘
+```mermaid
+flowchart TD
+    A["Raw Network Traffic<br/>NSL-KDD / live feed"] --> M1
+
+    M1["MODULE 1<br/>Behavioural Anomaly Detection<br/>Ensemble: Z-score + Isolation Forest"]
+    M1 -->|flagged anomaly + severity| B["Pipeline Bridge<br/>event to natural-language description"]
+    B -->|behaviour description| M2
+
+    M2["MODULE 2<br/>APT Attribution Agent<br/>Hybrid RAG - MITRE ATT&CK - 697 techniques"]
+    M2 -->|technique + tactics + threat group| M3
+
+    M3["MODULE 3<br/>Incident Response Orchestrator<br/>Dynamic blast radius - escalation gates - rollback"]
+    M3 --> M4
+    M3 --> M5
+
+    M4["MODULE 4<br/>Vulnerability Prioritisation<br/>Real NVD data - threat-actor context"]
+    M5["MODULE 5<br/>Cyber Resilience Digital Twin<br/>Attack-path simulation - investment impact"]
+    M4 <-->|asset criticality vs risk scores| M5
+
+    M4 --> D["Unified Dashboard"]
+    M5 --> D
+
+    style M1 fill:#1b3a5c,color:#fff,stroke:#0d1b2a
+    style M2 fill:#1b3a5c,color:#fff,stroke:#0d1b2a
+    style M3 fill:#1b3a5c,color:#fff,stroke:#0d1b2a
+    style M4 fill:#c0392b,color:#fff,stroke:#7b241c
+    style M5 fill:#c0392b,color:#fff,stroke:#7b241c
+    style A fill:#f4f6f7,color:#1c2833
+    style B fill:#f4f6f7,color:#1c2833
+    style D fill:#d4a017,color:#1c2833
 ```
 
-Modules 1→2→3 run as a proven live pipeline. Modules 4 and 5 cross-reference each other's real data (asset criticality, threat-actor context, vulnerability scores) rather than operating in isolation.
+Modules 1→2→3 run as a proven, tested live pipeline. Modules 4 and 5 cross-reference each other's real data (asset criticality, threat-actor context, vulnerability scores) rather than operating in isolation — for example, Module 3's blast-radius calculation for an action on `SCADA-01` multiplies the action's base disruption score by that asset's **real** criticality value pulled directly from Module 4's inventory.
 
 ---
 
 ## 📦 Modules & Progress
+
+```mermaid
+gantt
+    title Build Timeline (Day 1 - Day 8)
+    dateFormat  X
+    axisFormat Day %s
+    section Foundation
+    Scope + datasets           :done, d0, 0, 1
+    section Modules
+    Module 1 - Anomaly Detection      :done, m1, 1, 3
+    Module 2 - APT Attribution        :done, m2, 3, 5
+    Module 3 - Incident Response      :done, m3, 5, 7
+    Module 4 - Vulnerability Priority :done, m4, 7, 8
+    Module 5 - Digital Twin           :done, m5, 8, 9
+    Dashboard + research deep-dives   :done, m6, 9, 10
+```
 
 | # | Module | Status | Depth |
 |---|--------|--------|-------|
@@ -105,6 +107,7 @@ Modules 1→2→3 run as a proven live pipeline. Modules 4 and 5 cross-reference
 | 3 | **Autonomous Incident Response Orchestrator** | ✅ Complete | Dynamic blast radius, confidence gating, rollback, campaign correlation |
 | 4 | **Government Infrastructure Vulnerability Prioritisation** | ✅ Complete | Real NVD data, threat-actor context, capacity-constrained scheduling |
 | 5 | **Cyber Resilience Digital Twin** | ✅ Complete | Attack-path simulation, choke-point analysis, investment impact testing |
+| — | **Unified Dashboard** | ✅ Complete | Streamlit app tying all 5 modules together with live interaction |
 
 See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
 
@@ -125,7 +128,7 @@ See [`docs/SCOPE.md`](docs/SCOPE.md) for full scope and success criteria.
 |---|---|---|---|
 | 79.3% | 88.3% | 8.6%¹ | 28.4%¹ |
 
-¹ *R2L/U2R attacks are low-volume and behaviourally subtle — a known, documented challenge in NSL-KDD research. Flagged here transparently as a limitation, not hidden — and it directly drives the risk ranking in Module 5's red-team scenarios (see below).*
+¹ *R2L/U2R attacks are low-volume and behaviourally subtle — a known, documented challenge in NSL-KDD research. Flagged transparently as a limitation and investigated in depth (see [Research Findings](#-research-findings-roadmap-investigations)), not hidden.*
 
 ### Module 2 — APT Attribution Agent (RAG over MITRE ATT&CK, 697 techniques)
 
@@ -175,11 +178,12 @@ Risk score combines CVSS-BT (40%) + EPSS (25%) + CISA KEV (20%) + asset critical
 
 ## 🛠️ Tech Stack
 
-- **ML/Data:** Python, pandas, scikit-learn (Isolation Forest, TF-IDF), NumPy
+- **ML/Data:** Python, pandas, scikit-learn (Isolation Forest, Random Forest, TF-IDF), NumPy
+- **NLP / Retrieval:** TF-IDF with keyword-boost hybrid; Word2Vec (gensim) investigated and benchmarked
 - **Graph analysis:** NetworkX (attack-path simulation, centrality analysis)
 - **Threat Intelligence:** MITRE ATT&CK STIX 2.1 Enterprise dataset, CVSS-BT (EPSS + CISA KEV enrichment), NVD CVE descriptions
 - **Visualization:** matplotlib, seaborn
-- **Dashboard:** *(planned)* Streamlit / React
+- **Dashboard:** Streamlit
 
 ---
 
@@ -264,16 +268,15 @@ streamlit run app.py
 
 ---
 
-## 🗺️ Roadmap
+## 🔬 Research Findings: Roadmap Investigations
 
-- [x] Module 1: Behavioural Anomaly Detection (ensemble model, rigorously evaluated)
-- [x] Module 2: APT Attribution Agent (hybrid RAG, quantitatively evaluated)
-- [x] Module 3: Autonomous Incident Response Orchestrator (dynamic blast radius, 100% compliance audit)
-- [x] Module 4: Vulnerability Prioritisation (real NVD data, threat-actor context, capacity scheduling)
-- [x] Module 5: Cyber Resilience Digital Twin (attack-path simulation, investment impact assessment)
-- [x] Unified dashboard integrating all 5 modules (Streamlit)
-- [x] Investigated R2L/U2R detection improvement via supervised fine-tuning — **finding: it makes things worse, not better.** Root cause: 29.2% of test-set attacks are types never seen in training (zero-day simulation built into NSL-KDD), which a supervised model cannot recognize by definition. This empirically validates the platform's unsupervised/behavioural design rather than exposing a fixable gap. See [`anomaly-detection/supervised_r2l_u2r_improvement_summary.json`](anomaly-detection/supervised_r2l_u2r_improvement_summary.json).
-- [x] Investigated upgrading retrieval from TF-IDF to semantic embeddings — trained a from-scratch Word2Vec model and tested it two ways. On a held-out paraphrase benchmark it scored 92.7% (misleadingly high — it was memorizing each technique's unique vocabulary on a small 697-document corpus, not generalizing semantically). On a hand-labeled 20-query realistic SOC benchmark, it dropped to 15-25% while TF-IDF+keyword-boost held at 45%. **Kept TF-IDF in production** — a real semantic upgrade would need pretrained embeddings, which need model weights this sandbox can't download. See [`attribution-agent/soc_benchmark_comparison.json`](attribution-agent/soc_benchmark_comparison.json).
+Two "possible improvement" ideas were investigated rigorously rather than left as unverified assumptions — both produced genuine, honestly-reported findings, including negative results.
+
+**Can supervised fine-tuning fix R2L/U2R detection?** A class-weighted Random Forest was trained directly on labelled data to target the weak categories. Result: it made detection *worse* (R2L: 8.6%→5.0%, U2R: 28.4%→13.4%). Root cause: **29.2% of test-set attacks are types never present in training at all** — a deliberate zero-day simulation built into NSL-KDD. A supervised model cannot recognize what it has never seen; the unsupervised behavioural approach generalizes to novel attacks by design. This empirically validates the platform's core architecture rather than exposing a fixable gap.
+
+**Do semantic embeddings beat TF-IDF for MITRE ATT&CK retrieval?** A Word2Vec model was trained from scratch (no internet access to pretrained model hubs from this environment) and tested two ways. On a held-out paraphrase benchmark it scored 92.7% — misleadingly high, since it turned out to be memorizing each technique's unique vocabulary on a small 697-document corpus rather than generalizing. On a second, hand-labeled benchmark of realistic SOC phrasing, it dropped to 15–25% while TF-IDF+keyword-boost held at 45%. **TF-IDF was kept in production.**
+
+Full details: [`anomaly-detection/supervised_r2l_u2r_improvement_summary.json`](anomaly-detection/supervised_r2l_u2r_improvement_summary.json), [`attribution-agent/soc_benchmark_comparison.json`](attribution-agent/soc_benchmark_comparison.json)
 
 ---
 
@@ -281,4 +284,4 @@ streamlit run app.py
 
 **Raghav Marda** — Solo builder, Amity University Mumbai, Google Student Ambassador 2026
 
-*Last updated: Day 8 of build (see commit history for detailed timeline)*
+Submission for ET AI Hackathon 2026, Problem Statement 7.
