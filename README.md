@@ -7,7 +7,7 @@
 ![Problem Statement](https://img.shields.io/badge/PS-7-orange)
 ![Modules](https://img.shields.io/badge/modules-5%2F5%20complete-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-Hackathon%20Prototype-lightgrey)
+![License](https://img.shields.io/badge/license-Hackathon%20Prototype-orange)
 
 > A behavioural intelligence platform that detects cyber threats to critical infrastructure **without relying on known malware signatures** — compressing detection-to-response time from weeks to minutes.
 
